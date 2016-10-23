@@ -1,0 +1,459 @@
+host_name;asn;asn_v4;asn_v6;country_code;address_v4;address_v6
+colocation singapore;63949;;;US;139.162.29.117;2400:8901::f03c:91ff:fe3b:d08
+colocation dallas;36351;;;SG;45.33.5.55;2600:3c00::f03c:91ff:fe3b:d2d
+world4you01.ring.nlnog.net;38955;;;AT;81.19.156.22;2a00:1a68:3:1::5d18:b819
+swisscom01.ring.nlnog.net;3303;;;CH;193.247.170.254;2001:918:0:64::2
+lwlcom01.ring.nlnog.net;50629;;;DE;185.55.116.5;2a00:c380:1337:1::5
+isarnet01.ring.nlnog.net;197164;;;DE;192.162.230.35;2001:67c:2274:4021::101
+redpilllinpro02.ring.nlnog.net;39029;;;NO;87.238.39.42;2a02:c0:400:108::1
+amsio01.ring.nlnog.net;8315;;;NL;5.100.229.206;2a02:20b0:165::4
+worldstream01.ring.nlnog.net;49981;;;NL;217.23.0.6;2a00:7c80:0:44::2
+xconnect01.ring.nlnog.net;260;;;NL;185.19.100.58;2a04:1120:1::58
+globalways01.ring.nlnog.net;48918;;;DE;94.186.187.3;2a02:c98:ffff:ff00::2
+voxel01.ring.nlnog.net;29791;;;US;107.6.72.20;2001:48c8:3:2::2
+amazon05.ring.nlnog.net;16509;;;US;50.112.109.154;2620:108:700f::3270:6d9a
+infostrada01.ring.nlnog.net;34756;;;NL;176.58.30.6;2a03:fc01:0:105::21
+cdw01.ring.nlnog.net;3599;;;US;64.73.41.115;2607:fee0:8008:1::10
+qcom01.ring.nlnog.net;41497;;;IT;80.76.80.28;2001:4bb0:d:8::28
+robtex01.ring.nlnog.net;48285;;;US;192.71.253.130;2a00:9c00:1000:130::2
+sbtap01.ring.nlnog.net;59715;;;IT;185.5.201.240;2a02:cdc5:9715:0:185:5:201:240
+teamix01.ring.nlnog.net;33988;;;DE;194.150.191.55;2001:67c:14c:12f::55:1
+flhsi01.ring.nlnog.net;36295;;;US;208.90.223.6;2606:2400:223:4::6
+tenet01.ring.nlnog.net;36944;;;ZA;155.232.10.18;2001:4200:fffb::20c:29ff:fe7e:8ea4
+itps01.ring.nlnog.net;42010;;;GB;128.65.97.93;2A03:7F80:42:1051::93
+maxitel02.ring.nlnog.net;61349;;;NL;91.205.215.130;2a04:4344:2:3::2
+tdc01.ring.nlnog.net;3292;;;DK;193.162.154.27;2001:6c8:2:800::27
+communityrack01.ring.nlnog.net;57118;;;CH;185.95.216.100;2a05:fc80:2:21::100
+digitalocean04.ring.nlnog.net;393406;;;US;104.131.59.72;2604:a880:800:10::ed:6001
+skyway01.ring.nlnog.net;196763;;;DE;109.234.105.30;2a00:18e0:0:dc:109:234:105:30
+euronet01.ring.nlnog.net;5390;;;NL;194.134.192.4;2a02:2500:0000:040B::5
+quadranet01.ring.nlnog.net;8100;;;US;104.223.2.2;2607:fcd0:100:22::2
+atw01.ring.nlnog.net;41075;;;HU;88.151.99.253;2a01:270:91fd::1
+digmia01.ring.nlnog.net;48304;;;SK;91.210.181.185;2a01:5200:100::7269:6b67:3031
+ovh02.ring.nlnog.net;16276;;;FR;37.187.50.166;2001:41d0:52:400:0:0:0:53b
+hosteam01.ring.nlnog.net;51290;;;PL;178.217.185.6;2001:67c:2044:c102::d8c0:be8f
+immense01.ring.nlnog.net;7954;;;US;72.194.128.201;2620:8d:4000:1000::10
+cloudnl01.ring.nlnog.net;60950;;;NL;185.23.24.149;2a00:6960:1:1::24:149:1
+masterinternet01.ring.nlnog.net;24971;;;CZ;85.118.134.2;2a01:430:100:2::2
+nts01.ring.nlnog.net;15576;;;CH;212.103.89.211;2a00:c38:2::5
+leaseweb01.ring.nlnog.net;16265;;;NL;85.17.150.181;2001:1af8:4300:a004:8::2
+inerail01.ring.nlnog.net;33031;;;US;192.92.237.76;2604:5980:1001:d::4
+fremaks01.ring.nlnog.net;51827;;;DE;46.19.92.60;2a02:2918:0:fc00::a6a0:81d6
+in2ip01.ring.nlnog.net;34141;;;NL;217.198.20.135;2a02:7d0:3:208:250:56ff:fe9c:1e
+amazon02.ring.nlnog.net;16509;;;IE;176.34.122.81;2a01:578:3::b022:7a51
+ism01.ring.nlnog.net;21162;;;NL;178.248.168.142;2a02:bd0:2:2::2
+rootlu01.ring.nlnog.net;5577;;;LU;94.242.192.13;2a01:608:f::13
+riseup01.ring.nlnog.net;16652;;;US;199.254.238.43;2620:13:4000:8000:e8:d6ff:fec2:dcd5
+globalconnect01.ring.nlnog.net;42525;;;DK;212.98.93.10;2a01:7e8:1:800::1b2
+totaalnet01.ring.nlnog.net;43190;;;NL;77.95.252.48;2a00:1478:50:0:11:913:0:1
+gossamerthreads01.ring.nlnog.net;36483;;;CA;208.70.247.50;2607:fcc0:2:1:208:70:247:50
+pix01.ring.nlnog.net;61417;;;PS;185.1.1.234;2001:7f8:72:200::1
+simplytransit01.ring.nlnog.net;29550;;;GB;94.76.229.133;2a02:af8:1:4400::4481
+maverick01.ring.nlnog.net;34688;;;PL;46.250.186.30;2a01:5e00:0:67::2
+utwente01.ring.nlnog.net;1133;;;NL;130.89.6.17;2001:67c:2564:a115:250:56ff:fe89:6d65
+inotel01.ring.nlnog.net;44514;;;PL;212.67.131.20;2a02:78:d443:8314::1
+cesnet01.ring.nlnog.net;2852;;;CZ;78.128.211.50;2001:718:1:1f:50:56ff:feee:50
+adix01.ring.nlnog.net;31731;;;NL;89.200.203.138;2001:67C:6B8:100::138
+netsign01.ring.nlnog.net;31078;;;DE;217.115.1.67;2a00:1328:e000:456::67
+iplan01.ring.nlnog.net;16814;;;AR;190.210.175.57;2800:40:c06::0001
+iccn01.ring.nlnog.net;40387;;;US;72.36.126.205;2620:0:e10:400a::5
+bogalnet01.ring.nlnog.net;50168;;;SE;31.31.162.99;2a02:4b00:1:f99::2
+tuxis01.ring.nlnog.net;197731;;;NL;31.3.104.43;2a03:7900:2::31:3:104:43
+iway01.ring.nlnog.net;8758;;;CH;212.25.27.3;2001:8e0:40:318:0:abcd:dead:beef
+apnic01.ring.nlnog.net;4608;;;AU;203.133.248.14;2401:2000:6660::14
+hivane01.ring.nlnog.net;34019;;;FR;193.17.192.2;2001:67c:1740:9003::c111:c002
+peakten02.ring.nlnog.net;19271;;;US;64.239.240.36;2607:f758:8080:0:250:56ff:feaf:3c80
+ehsab02.ring.nlnog.net;50986;;;SE;178.236.73.122;2a02:1610:1000:2::2
+softlayer04.ring.nlnog.net;36351;;;US;50.23.64.60;2607:f0d0:2101:a::3
+tumuenchen01.ring.nlnog.net;56357;;;DE;188.95.233.9;2a00:4700:0:2:2e0:81ff:fe2f:facb
+mainloop01.ring.nlnog.net;43893;;;SE;185.9.166.9;2a01:298:f001:a700::10
+pcextreme01.ring.nlnog.net;48635;;;NL;109.72.80.176;2a00:0f10:0105:0020:0000:0000:0000:0000
+claranet07.ring.nlnog.net;6656;;;GB;81.171.183.186;2a00:ed0:2000:4800::2
+infomaniak01.ring.nlnog.net;29222;;;CH;84.16.92.119;2001:1600:3:5::110
+a2binternet01.ring.nlnog.net;51088;;;NL;178.249.153.39;2a02:1668:a2b:1011::39
+2connect01.ring.nlnog.net;35236;;;CZ;109.205.75.161;2a00:1238:4:2c:3::2
+softlayer01.ring.nlnog.net;36351;;;US;174.36.33.50;2607:f0d0:1004:d3::2
+obenetwork01.ring.nlnog.net;197595;;;SE;46.227.66.10;2A03:8600:0:132::2
+poznan01.ring.nlnog.net;9112;;;PL;150.254.166.148;2001:808:2:3003::5
+ebayclassifiedsgroup01.ring.nlnog.net;41552;;;NL;91.211.73.209;2a04:cb40:1a01::2
+suomi01.ring.nlnog.net;16302;;;FI;217.119.42.194;2a00:1190:0:1003::2
+nodesdirect01.ring.nlnog.net;19531;;;US;23.92.92.198;2604:4600:b01:6122::2
+oxilion01.ring.nlnog.net;48539;;;NL;93.186.180.113;2a00:d10:1141:6::5
+lightstorm01.ring.nlnog.net;42005;;;SK;92.240.232.158;2a00:10d8:11::3:0:1
+softlayer02.ring.nlnog.net;36351;;;US;173.193.70.99;2607:f0d0:1201:30:225:90ff:fe0c:b7c3
+dcenterpl01.ring.nlnog.net;49895;;;PL;213.5.10.55;2a00:e800:10::55
+exanetworks01.ring.nlnog.net;30740;;;GB;82.219.48.9;2a02:b80:2:7:1::1
+digitalocean02.ring.nlnog.net;133165;;;SG;128.199.190.202;2400:6180:0000:00D0:0000:0000:0147:A001
+xfernet01.ring.nlnog.net;27630;;;US;72.34.255.127;2607:f350:1:ffff::1:3
+boxed-it01.ring.nlnog.net;50156;;;BE;195.200.224.123;2001:67c:344:1010:5054:ff:feca:6f60
+fusix01.ring.nlnog.net;57866;;;NL;37.139.139.110;2a00:a7c0:1000:1303::1303
+afilias02.ring.nlnog.net;12041;;;US;65.22.12.229;2a01:8840:c:500::229
+as250net01.ring.nlnog.net;250;;;DE;194.150.168.19;2001:4ce8:c134:1019::1
+bit01.ring.nlnog.net;12859;;;NL;212.114.113.69;2001:7b8:62b:0:400:d4ff:fe72:7145
+dcsone01.ring.nlnog.net;37989;;;SG;203.123.48.14;2405:fc00::a001
+videoplaza01.ring.nlnog.net;197541;;;SE;46.226.152.228;2a01:a100:a:500::228
+zylon01.ring.nlnog.net;8312;;;NL;193.16.154.25;2a01:310:8312:1001::19
+nianet01.ring.nlnog.net;31027;;;DK;87.116.6.32;2a02:188:2:d6::32
+hostvirtual01.ring.nlnog.net;36236;;;IN;103.6.87.36;2403:2500:4000::d77
+amatis01.ring.nlnog.net;34442;;;GB;77.246.27.26;2a00:1990:2727::2726
+ntt02.ring.nlnog.net;2914;;;NL;165.254.255.12;2001:728:1808::12
+melbourne01.ring.nlnog.net;39451;;;GB;37.128.187.253;2a03:b200:f::2
+queryfoundry01.ring.nlnog.net;62638;;;US;107.182.141.199;2602:ffe8:200::4d76:a690
+ripe01.ring.nlnog.net;3333;;;NL;193.0.0.180;2001:67c:2e8:3::c100:b4
+goscomb01.ring.nlnog.net;39326;;;GB;46.17.60.106;2a01:348:0:42::10
+fidonet01.ring.nlnog.net;8282;;;GB;80.252.121.11;2a01:2c0:a::1:102
+unilogicnetworks01.ring.nlnog.net;28788;;;NL;62.133.200.1;2001:4128:6135:10:250:56ff:feb6:24
+claranet03.ring.nlnog.net;8426;;;NL;212.61.158.6;2a02:830:1:4::2
+stargate01.ring.nlnog.net;19171;;;CA;98.143.95.34;2607:4100:0000:0200::2
+doruknet01.ring.nlnog.net;8685;;;TR;212.58.0.250;2a02:480:3411:6::2
+nine01.ring.nlnog.net;29691;;;CH;94.230.210.216;2a02:418:5102::1
+businessconnect01.ring.nlnog.net;15693;;;NL;46.183.250.9;2a01:8800:0:250::9
+bluezonejordan01.ring.nlnog.net;57393;;;JO;31.222.236.6;2a01:8e40:1:12::2
+arpnetworks01.ring.nlnog.net;25795;;;US;174.136.100.234;2607:f2f8:ade8::2
+proserve01.ring.nlnog.net;21155;;;NL;83.96.195.104;2001:828:100:82:11:104:0:1
+ausregistry01.ring.nlnog.net;38796;;;AU;120.29.249.252;2001:dcd:11:3d::4
+dfn01.ring.nlnog.net;680;;;DE;194.95.236.10;2001:638:d:c402::1:1
+qbranch01.ring.nlnog.net;20514;;;SE;217.151.198.151;2a03:c300:ffff:fffe::d
+larsendata01.ring.nlnog.net;197495;;;DK;91.221.196.181;2001:67c:3c0:13::181
+mtwentyfourseven01.ring.nlnog.net;9009;;;GB;176.10.80.18;2A01:300:666:0::2
+onlinesas01.ring.nlnog.net;12876;;;FR;62.210.156.8;2001:bc8:3::3
+yellowfiber01.ring.nlnog.net;40015;;;US;67.23.114.2;2607:fd50:1::5a
+kpn01.ring.nlnog.net;286;;;NL;134.222.92.50;2001:680:0:800f::15e
+csuc01.ring.nlnog.net;13041;;;ES;84.88.14.229;2001:40B0:1:1122:CE5C:A007:0:2
+sixdegrees01.ring.nlnog.net;6908;;;GB;78.41.154.18;2a02:298:81:1337::b33f
+rrbone01.ring.nlnog.net;39138;;;DE;31.172.10.5;2a01:a700:4836::1:2
+jaguarnetwork01.ring.nlnog.net;30781;;;FR;85.31.196.24;2a01:240:101::24
+nforce01.ring.nlnog.net;43350;;;NL;77.247.183.177;2a00:1768:1000:21:1::1
+es01.ring.nlnog.net;293;;;US;198.129.33.90;2001:400:201:8000::2
+speedpartner01.ring.nlnog.net;34225;;;DE;91.184.33.38;2a01:198:0:3::38
+luna01.ring.nlnog.net;12902;;;NL;217.77.130.230;2001:9c0:1:4::130:230
+softlayer05.ring.nlnog.net;36351;;;US;50.23.130.226;2607:f0d0:2002:6e::2
+spacenet01.ring.nlnog.net;5539;;;DE;195.30.193.17;2001:608:1:151::17
+mythicbeasts01.ring.nlnog.net;44684;;;GB;93.93.129.145;2a00:1098:0:80:1000:1d:0:1
+peakten03.ring.nlnog.net;19271;;;US;68.71.96.252;2607:f758:d040:0:250:56ff:fe92:544c
+peakten01.ring.nlnog.net;19271;;;US;206.196.5.164;2607:f758:a080:0:250:56ff:fe85:3098
+portlane01.ring.nlnog.net;42708;;;SE;80.67.10.228;2a00:1a28:0:1::10:228
+vshn01.ring.nlnog.net;59758;;;CH;185.72.20.108;2a05:3780:8000:308::108
+ovh01.ring.nlnog.net;16276;;;FR;37.187.111.58;2001:41d0:a:643a::137
+btireland01.ring.nlnog.net;2110;;;IE;193.95.190.212;2001:7c8:1000:5::1
+xing02.ring.nlnog.net;50343;;;DE;109.233.156.243;2a01:8781:7473::7269:6e67
+funet01.ring.nlnog.net;1741;;;FI;193.166.255.250;2001:708:0:b::2
+kinber01.ring.nlnog.net;14877;;;US;162.223.16.247;2001:550:501:3::1ce:c01d:bee2
+sapphire01.ring.nlnog.net;34803;;;GI;195.166.195.252;2a02:638:8:1::4
+prolocation01.ring.nlnog.net;41887;;;NL;94.228.136.130;2a00:d00:ff:136:94:228:136:130
+upcloud04.ring.nlnog.net;25697;;;US;38.100.118.29;2605:7380:1000:1310:a8aa:aaff:fea0:23a4
+vancis01.ring.nlnog.net;1126;;;NL;85.90.94.148;2001:4d60:10:1200::4
+bchnetwork01.ring.nlnog.net;35701;;;BE;195.234.45.126;2a01:70:ffff:3::2
+spacedump01.ring.nlnog.net;30880;;;SE;212.63.210.241;2a01:298:f0::f
+vellance01.ring.nlnog.net;34012;;;NL;217.195.114.152;2a03:5500:1:2:217:195:114:152
+amazon04.ring.nlnog.net;16509;;;JP;176.34.57.117;2400:6700:ff00::b022:3975
+upcloud02.ring.nlnog.net;202053;;;DE;94.237.24.27;2a04:3542:1000:910:a8aa:aaff:fea0:4c3a
+gigabit01.ring.nlnog.net;60876;;;DK;185.24.168.23;2a00:7660:0:1::23
+zeronet01.ring.nlnog.net;49962;;;GB;194.0.58.58;2001:67c:3e0:c5::58
+telecityfi01.ring.nlnog.net;29154;;;FI;87.108.57.169;2001:a68:1:d:87:108:57:169
+iij01.ring.nlnog.net;2497;;;JP;202.32.157.84;2001:240:10c:5:0:69:696a:3031
+itmastaren01.ring.nlnog.net;51929;;;SE;81.94.161.36;2a00:7800:8000::36
+is01.ring.nlnog.net;15879;;;NL;213.197.240.52;2001:9a0:2000:a::1:1
+phusion01.ring.nlnog.net;58226;;;GB;91.239.87.47;2001:67c:105c:800::2
+iabg01.ring.nlnog.net;29259;;;DE;83.170.60.36;2001:1b10:1006::53aa:3c24
+switch01.ring.nlnog.net;559;;;CH;195.176.255.11;2001:620:0:9::a3
+dacor01.ring.nlnog.net;28876;;;DE;217.24.48.97;2a00:9d80:9000:2::48:97
+entanet01.ring.nlnog.net;8468;;;GB;78.33.35.246;2001:4d48:face:e::2
+multiplay01.ring.nlnog.net;35028;;;GB;85.236.110.143;2001:4DB0:10:7::12
+telus01.ring.nlnog.net;852;;;CA;154.11.253.242;2001:56A:2:3::f2
+nynex01.ring.nlnog.net;62023;;;DE;109.236.159.249;2a00:e60:7000:1::249:1
+hibernia03.ring.nlnog.net;5580;;;FR;78.152.54.74;2a02:d28:5580:e:1000::416
+previder01.ring.nlnog.net;20847;;;NL;84.241.137.18;2001:1690:2:115::18
+atlanticmetro01.ring.nlnog.net;29838;;;US;108.60.128.14;2001:1980:fc:3::2
+cablecom01.ring.nlnog.net;42689;;;GB;77.244.137.180;2a01:388:0:f2::10
+acsystemy01.ring.nlnog.net;39439;;;PL;80.245.176.74;2a03:e800:0:ffff::2
+transip01.ring.nlnog.net;20857;;;NL;149.210.130.136;2a01:7c8:aab1:3f8::1
+netability01.ring.nlnog.net;1197;;;IE;46.182.9.20;2a03:8900:100:711::20
+man-da01.ring.nlnog.net;8365;;;DE;82.195.72.4;2001:41b8:200:0:ace3:9ff:fe10:e812
+solido01.ring.nlnog.net;12617;;;DK;109.238.49.65;2a02:9d0:3023:1::2
+tetaneutral01.ring.nlnog.net;197422;;;FR;91.224.149.112;2a01:6600:8081:7000::1
+initseven01.ring.nlnog.net;13030;;;CH;82.197.163.98;2001:1620:2777:36::98
+sargasso01.ring.nlnog.net;42579;;;GB;78.158.65.68;2A01:550:0:402::1
+redpilllinpro03.ring.nlnog.net;39029;;;SE;87.238.57.254;2a02:c0:300:102::1
+nordunet01.ring.nlnog.net;2603;;;SE;109.105.111.80;2001:948:4:6::80
+beanfield01.ring.nlnog.net;21949;;;CA;66.207.196.130;2607:F0C8:1:1::1
+4ddc01.ring.nlnog.net;31463;;;GB;46.245.255.5;2a00:1c18:0:101::5
+openminds01.ring.nlnog.net;30961;;;BE;37.72.162.102;2a02:d08:1002:321:370:7216:2102:1
+sabay01.ring.nlnog.net;7712;;;KH;118.67.200.190;2405:aa00:4:298::190
+fnutt01.ring.nlnog.net;57381;;;NO;193.150.22.68;2001:67c:24e4:64::68
+intellit01.ring.nlnog.net;50272;;;NO;62.24.55.66;2a03:1400:21:1703::66
+signet01.ring.nlnog.net;28878;;;NL;81.21.136.3;2001:4cb8:1:ff03::2
+blix01.ring.nlnog.net;50304;;;NO;178.255.148.131;2a02:20c8:14::2
+nlnetlabs01.ring.nlnog.net;199664;;;NL;185.49.141.7;2a04:b900:0:1::7
+direcpath01.ring.nlnog.net;31939;;;US;65.50.1.70;2607:f1e8:f0f0:b:528a:1948:db90:ec59
+citynetwork02.ring.nlnog.net;12552;;;SE;185.2.152.103;2001:67c:174c:1::103
+ovh03.ring.nlnog.net;16276;;;FR;5.196.13.221;2001:41d0:52:600:0:0:0:671
+i3d01.ring.nlnog.net;49544;;;NL;31.204.129.45;2a00:1630:2:a01::1
+iptron01.ring.nlnog.net;12757;;;EE;188.227.249.82;2a03:5880:101:5::82
+cambrium01.ring.nlnog.net;25596;;;NL;217.19.17.23;2a02:58:3:110::23:1
+nimag01.ring.nlnog.net;6893;;;CH;62.220.128.73;2001:788:2:143::2
+tigron01.ring.nlnog.net;56837;;;BE;86.39.65.11;2a00:6ec0:101:1:0:11::
+edsitech01.ring.nlnog.net;202194;;;CH;185.50.191.247;2a04:c000:ed51:919:247::1
+duocast01.ring.nlnog.net;31477;;;NL;89.188.27.98;2a01:1b0:7999:453::50
+popsc01.ring.nlnog.net;11242;;;BR;200.237.196.2;2001:12f0:200:4017:20c:29ff:fede:b178
+firstcolo01.ring.nlnog.net;44066;;;DE;212.224.71.117;2a01:7e0::212:224:71:117
+esgob01.ring.nlnog.net;30746;;;GB;195.177.253.162;2001:67c:1b40:162::162
+equinixnl01.ring.nlnog.net;16243;;;NL;217.114.111.202;2001:1540:801:19:20c:29ff:fe8f:8feb
+nicchile01.ring.nlnog.net;27678;;;CL;200.1.120.28;2001:1398:3:120:200:1:120:28
+transtelco01.ring.nlnog.net;32098;;;MX;201.174.85.6;2604:d600:302:7::2
+sonic01.ring.nlnog.net;7065;;;US;70.36.170.6;2001:5a8:201:4::2
+kaiaglobal02.ring.nlnog.net;251;;;US;95.141.20.190;2a02:b0:2011:5::2
+msu01.ring.nlnog.net;2848;;;RU;93.180.19.229;2a00:f480:0:104::2
+underworld01.ring.nlnog.net;50213;;;NO;91.213.203.91;2001:67c:398::91
+corebackbone01.ring.nlnog.net;33891;;;DE;82.199.134.114;2a01:4a0:61::2
+cybercom01.ring.nlnog.net;51164;;;FI;178.217.129.212;2001:67c:224:13::1337
+rgnet01.ring.nlnog.net;3130;;;US;147.28.0.89;2001:418:1::89
+xs4all01.ring.nlnog.net;3265;;;NL;82.94.249.162;2001:888:2000:3e::1337
+speakup01.ring.nlnog.net;49627;;;NL;185.68.163.254;2a03:2c60:0:8000::42
+hostvirtual02.ring.nlnog.net;36236;;;HK;103.6.84.107;2403:2500:8000:1::62e
+xing01.ring.nlnog.net;50343;;;DE;109.233.152.243;2a01:8780:7473::7269:6e67
+bytemark01.ring.nlnog.net;35425;;;GB;5.28.62.9;2001:41c9:1:41c::9
+hostway01.ring.nlnog.net;14280;;;CA;64.40.105.244;2606:6a00::a:c
+datacentred01.ring.nlnog.net;62212;;;GB;185.43.216.223;2a04:9700:1:9::2
+combell01.ring.nlnog.net;34762;;;BE;37.148.176.54;2a00:1c98:10:7::2
+nexellent01.ring.nlnog.net;31424;;;CH;217.147.213.237;2001:4168:babe:2::2
+liquidweb01.ring.nlnog.net;32244;;;US;209.59.185.5;2607:fad0:32:a021::4
+leaseweb04.ring.nlnog.net;16265;;;DE;185.17.144.154;2a00:c98:2200:af0a:baaa::1
+glesys01.ring.nlnog.net;43948;;;SE;109.74.6.228;2a02:750:7::392
+siminn01.ring.nlnog.net;9167;;;DK;213.173.231.26;2a01:3a0:23:2222::2
+poppr01.ring.nlnog.net;10881;;;BR;200.134.255.54;2801:82:0:3::54
+upcloud03.ring.nlnog.net;202053;;;GB;83.136.252.93;2a04:3541:1000:500:a8aa:aaff:fea0:6ffe
+gwu01.ring.nlnog.net;11039;;;US;128.164.88.185;2620:106:c005:4f85:3816:8fd:80a4:58b9
+openimp01.ring.nlnog.net;47998;;;GB;94.228.79.60;2a00:1068:ffff:402::1024
+tfskok01.ring.nlnog.net;49420;;;PL;91.212.242.244;2001:67c:24c::b
+octopuce01.ring.nlnog.net;39389;;;FR;91.194.60.185;2001:67c:288::185
+onet02.ring.nlnog.net;12990;;;PL;141.105.16.133;2a02:c10:3f00:7::2
+vibe01.ring.nlnog.net;45177;;;NZ;14.1.44.230;2401:7000:1:2::2
+finecom01.ring.nlnog.net;15600;;;CH;212.60.60.202;2001:1a88:10:3:202::1
+hosteurope01.ring.nlnog.net;20773;;;DE;217.115.140.61;2a01:488:ded::d973:8c3d
+amazon03.ring.nlnog.net;16509;;;SG;46.137.244.41;2400:6500:ff00::2e89:f429
+maxitel01.ring.nlnog.net;61349;;;NL;185.29.203.222;2a04:4340:1:1::2
+nicbr01.ring.nlnog.net;22548;;;BR;200.160.6.171;2001:12ff:0:6172::171
+infowest01.ring.nlnog.net;11071;;;US;209.33.215.106;2604:2C00:0:110::2
+jointtransit01.ring.nlnog.net;24785;;;NL;213.207.9.61;2a02:10:0:1::90:10
+tripleit01.ring.nlnog.net;50295;;;NL;93.187.11.10;2a00:1f00:dc06:12::10
+nexiu01.ring.nlnog.net;15925;;;DE;46.21.1.102;2a01:7f8:0:10f:102::1
+coreinternet01.ring.nlnog.net;44345;;;GB;185.86.20.92;2a05:b480:300::2
+algar01.ring.nlnog.net;16735;;;BR;187.72.248.26;2001:1291:400:e::b
+kantonsschulezug01.ring.nlnog.net;34288;;;CH;46.234.32.56;2001:4b20:c001::1000
+voxel02.ring.nlnog.net;29791;;;SG;103.22.129.2;2404:1200:0:5::2
+fasttrackcomm01.ring.nlnog.net;30688;;;US;206.123.203.163;2607:6400:2::3163
+blacknight01.ring.nlnog.net;39122;;;IE;78.153.194.4;2a01:a8:dc2:40::aaaa
+choopa01.ring.nlnog.net;20473;;;US;45.63.14.202;2001:19f0:300:62a8:5400:ff:fe09:a1cd
+viatel01.ring.nlnog.net;31122;;;IE;80.93.31.245;2a01:258:8:6:20c:29ff:fe95:1965
+bkkfiber01.ring.nlnog.net;8542;;;NO;85.200.239.110;2a00:14d8:1001:713::2
+afilias03.ring.nlnog.net;12041;;;JP;199.19.52.229;2001:500:a:500::229
+ipmax01.ring.nlnog.net;25091;;;FR;46.20.247.200;2a02:2528:404:1::200
+filoo01.ring.nlnog.net;47215;;;DE;109.75.188.108;2a00:12c0:1015:100:0:2:0:1
+claranet02.ring.nlnog.net;8426;;;DE;195.38.140.4;2a00:1798:fff0::4
+switchco01.ring.nlnog.net;63399;;;NL;185.91.9.17;2a05:e580:105:1014::2
+claranet01.ring.nlnog.net;8426;;;GB;195.157.9.4;2001:a88:0:ff00::4
+claranet04.ring.nlnog.net;8426;;;PT;195.22.19.34;2001:4cc0:cafe:babe::2
+softlayer03.ring.nlnog.net;36351;;;US;174.37.230.130;2607:f0d0:3003:a9::2
+kwaoo01.ring.nlnog.net;24904;;;CH;178.250.209.33;2a03:4980::10:0:15
+sasag01.ring.nlnog.net;35518;;;CH;87.245.64.187;2a00:d80::1:185
+intouch01.ring.nlnog.net;8954;;;NL;212.19.220.58;2001:6e0:100:4001::2
+strato01.ring.nlnog.net;6724;;;DE;85.214.1.147;2a01:238:bd:3002::2
+webair01.ring.nlnog.net;27257;;;US;174.137.148.20;2604:9e00:0001:010c:0000:0000:0000:0005
+dragon01.ring.nlnog.net;15614;;;CZ;213.168.176.84;2a02:13b8:7800::2
+networkoperations01.ring.nlnog.net;30830;;;NL;80.73.130.123;2a01:5140:130:123::
+mknetzdienste01.ring.nlnog.net;25394;;;DE;85.220.161.84;2001:1640::55:3
+rackfish01.ring.nlnog.net;49232;;;SE;194.169.225.130;2a00:59c0:1:3::130
+towardex01.ring.nlnog.net;27552;;;US;216.93.240.179;2001:4830:123:1::d85d:f0b3
+elisa01.ring.nlnog.net;719;;;FI;194.157.148.236;2001:998:12:58::719
+jump01.ring.nlnog.net;8943;;;GB;212.13.217.117;2001:ba8:1::d975
+vocus01.ring.nlnog.net;4826;;;AU;175.45.73.66;2402:7800:0:2::1CE
+citynetwork03.ring.nlnog.net;52011;;;GB;185.52.156.103;2a03:b000:1:1::103
+mozilla01.ring.nlnog.net;36856;;;US;63.245.223.37;2620:101:8016:20::1:37
+vshn02.ring.nlnog.net;59761;;;CH;185.72.236.108;2a05:3d80:8000:208::108
+linode01.ring.nlnog.net;63949;;;SG;103.3.60.146;2400:8901::f03c:91ff:fe37:a150
+leaseweb02.ring.nlnog.net;60781;;;NL;37.48.73.130;2001:1af8:4700:a103:baaa::1
+syseleven01.ring.nlnog.net;25291;;;DE;37.49.155.108;2a00:7fc0:4000:13::9
+cyberverse01.ring.nlnog.net;11051;;;US;209.151.242.106;2607:f820:104::106
+noris01.ring.nlnog.net;12337;;;DE;213.95.10.76;2001:780:100:115::10
+altibox01.ring.nlnog.net;29695;;;NO;109.247.116.75;2a01:798:0:8050::75
+zitcom01.ring.nlnog.net;48854;;;DK;94.231.110.110;2a02:2338:ff00::705:1
+claranet06.ring.nlnog.net;8426;;;ES;92.54.7.29;2a02:a0:1:1::9
+iucc01.ring.nlnog.net;378;;;IL;128.139.197.81;2001:bf8:900:1::808b:c551
+nebula01.ring.nlnog.net;29422;;;FI;188.117.58.137;2001:1bc8:200:f::2
+cegeka01.ring.nlnog.net;9166;;;BE;212.113.66.22;2a02:2398::9166
+keenondots01.ring.nlnog.net;51313;;;NL;91.218.150.255;2a03:3400:3:2501::150:255
+blizoo01.ring.nlnog.net;13124;;;BG;217.9.226.25;2a00:4800:0020:6029:0000:0000:0000:0002
+swiftnode01.ring.nlnog.net;63294;;;US;104.255.38.130;2605:e980:14:73:7769:6674:6e6f:6465
+nautile01.ring.nlnog.net;45345;;;NC;115.126.160.143;2404:e400:998:0:216:3eff:fe7e:a08f
+ipvisie01.ring.nlnog.net;198089;;;NL;141.136.120.48;2a01:8580:103:1::108
+ispservices01.ring.nlnog.net;24875;;;NL;212.79.254.61;2001:968:8888:0:212:79:254:61
+kudelski01.ring.nlnog.net;42570;;;CH;185.35.61.74;2a04:5c87:8b00:1211:5054:ff:fe65:ff80
+digitalocean03.ring.nlnog.net;202018;;;NL;178.62.253.214;2A03:B0C0:0002:00D0:0000:0000:0004:E001
+trueinternet01.ring.nlnog.net;7470;;;TH;203.144.167.57;2001:fb0:100:ffff:211:25ff:fe40:9468
+claranet05.ring.nlnog.net;8426;;;FR;62.240.228.4;2001:a70:ff:5::4
+wirehive01.ring.nlnog.net;56730;;;GB;134.0.17.134;2a03:b980:c037::1
+solnet01.ring.nlnog.net;9044;;;CH;82.220.3.51;2001:1680:2:100:3:51:0:10
+dna01.ring.nlnog.net;16086;;;FI;62.78.96.149;2001:14b8:1000:1::c:100
+rnp01.ring.nlnog.net;1916;;;BR;200.133.192.67;2001:12f0:d00:1::1916:93
+icanndns01.ring.nlnog.net;40528;;;US;192.0.33.158;2620:0:2d0:203::158
+sggs01.ring.nlnog.net;24482;;;SG;203.175.175.197;2405:4200:100:10::197
+afilias01.ring.nlnog.net;12041;;;NL;199.10.66.229;2001:500:f1:500::229
+bdhub01.ring.nlnog.net;58656;;;BD;103.12.179.48;2404:d900:0:a::48
+sidn01.ring.nlnog.net;1140;;;NL;193.176.144.164;2a00:d78:0:fd:193:176:144:164
+bigwells01.ring.nlnog.net;22957;;;US;199.30.196.208;2620:8b:0:3ed::a
+nessus01.ring.nlnog.net;47692;;;AT;77.244.245.74;2a02:1b8:10:16::2
+teleweb01.ring.nlnog.net;48260;;;BE;185.77.198.16;2a03:1980:d0ff:0:185:77:198:16
+edutel01.ring.nlnog.net;39309;;;NL;88.159.8.253;2a01:670:300:2::253
+coloclue01.ring.nlnog.net;8283;;;NL;94.142.247.64;2a02:898:0:201::2
+kordia01.ring.nlnog.net;24324;;;NZ;124.157.73.94;2404:6c00:1:f::2
+amazon07.ring.nlnog.net;16509;;;BR;54.232.107.5;2804:800:0:3::36e8:6b05
+kaiaglobal01.ring.nlnog.net;251;;;DE;95.141.20.62;2a02:b0:1048:1::2
+netflix01.ring.nlnog.net;2906;;;US;198.45.56.12;2a00:86c0:ff0a:2906::12
+go6lab01.ring.nlnog.net;198644;;;SI;91.239.96.18;2001:67c:27e4::b3f4
+cloudcenter01.ring.nlnog.net;41993;;;FI;185.82.144.142;2a05:9100:20::15
+hurricane01.ring.nlnog.net;6939;;;US;64.71.160.154;2001:470:0:292::2
+solcon01.ring.nlnog.net;12414;;;NL;212.45.52.2;2001:9e0:400:53:212:45:52:2
+etop01.ring.nlnog.net;20853;;;PL;80.72.36.210;2a00:c90:0:3::1:2
+serverchoice01.ring.nlnog.net;50056;;;GB;178.18.123.233;2a01:8000::1:2
+vertixo01.ring.nlnog.net;59545;;;NL;92.63.161.60;2a01:a680:a1:10:1:60::
+amazon08.ring.nlnog.net;16509;;;AU;54.253.117.37;2403:b300:ff00::36fd:7525
+leaseweb03.ring.nlnog.net;30633;;;US;192.96.206.13;2604:9a00:2100:af05:baaa::1
+lchost01.ring.nlnog.net;25098;;;GB;213.230.217.125;2a01:70:1:217:2::125
+rezopole01.ring.nlnog.net;43100;;;FR;77.95.70.165;2a03:9180:1:21::a5
+interconnect01.ring.nlnog.net;9150;;;NL;212.83.212.122;2001:4018:1000:b::2
+amazon06.ring.nlnog.net;16509;;;US;184.169.146.69;2620:107:300f::b8a9:9245
+ntt01.ring.nlnog.net;2914;;;US;204.42.254.204;2001:418:0:7011:204:42:254:204
+amazon09.ring.nlnog.net;16509;;;DE;54.93.158.247;2a01:578:13::365d:9ef7
+upcloud01.ring.nlnog.net;202053;;;FI;185.26.50.99;2a04:3540:1000:310:a8aa:aaff:fea0:350d
+one01.ring.nlnog.net;51468;;;DK;46.30.209.1;2a02:2350:1:1201::1
+ualbany01.ring.nlnog.net;22990;;;US;169.226.252.20;2620:89:8000:38e::20
+antagonist01.ring.nlnog.net;51696;;;NL;195.211.72.12;2a03:3c00:a001:4::2
+tilaa01.ring.nlnog.net;196752;;;NL;46.19.36.12;2a02:2770::21a:4aff:feac:4576
+viatel03.ring.nlnog.net;31122;;;GB;212.126.61.70;2a01:8aa0:0:ffff:20c:29ff:fe3f:d8e7
+cyso01.ring.nlnog.net;25151;;;NL;93.94.224.87;2a01:518:1:58:2::2
+ovh04.ring.nlnog.net;16276;;;CA;192.99.153.129;2607:5300:101:0:0:0:0:599
+exnetworks01.ring.nlnog.net;35266;;;GB;46.30.8.23;2a01:b000:5:1::a
+merit01.ring.nlnog.net;237;;;US;198.108.63.64;2001:48a8:6880:63::64
+icanndns02.ring.nlnog.net;16876;;;US;192.0.46.158;2620:0:2830:203::158
+imagine01.ring.nlnog.net;25441;;;IE;89.127.199.164;2001:4d68:4::a
+surfnet01.ring.nlnog.net;1103;;;NL;192.42.123.22;2001:610:511:123:192:42:123:22
+netground01.ring.nlnog.net;41445;;;NL;87.250.146.52;2a02:f18:1:9231:87:250:146:52
+concepts-ict01.ring.nlnog.net;12871;;;NL;85.113.233.194;2001:838:76:20::2
+1oconsulting01.ring.nlnog.net;60133;;;SE;91.198.135.45;2001:067c:0578:3::45
+call2701.ring.nlnog.net;28920;;;GB;91.231.144.121;2a06:2e00::1:0:e0b7:4cda
+suretec01.ring.nlnog.net;199659;;;GB;185.8.92.17;2a02:d540::b908:5c11
+digitalocean01.ring.nlnog.net;202109;;;GB;178.62.52.116;2a03:b0c0:1:d0::101:d001
+solido02.ring.nlnog.net;12617;;;LU;185.4.139.65;2a02:9d0:ff00:63::2
+dyn01.ring.nlnog.net;33517;;;JP;103.11.200.254;2001:df0:258:300::beef
+widexs01.ring.nlnog.net;12573;;;NL;213.206.104.156;2001:898:2000:d::4
+amazon01.ring.nlnog.net;16509;;;US;23.21.176.87;2406:da00:ff00::1715:b057
+veracity01.ring.nlnog.net;29933;;;US;69.169.190.151;2600:7400:e00:1::7
+berkeley01.ring.nlnog.net;25;;;US;128.32.158.98;2607:f140:ffff:ff07::a
+grnet01.ring.nlnog.net;5408;;;GR;62.217.125.248;2001:648:2ffc:113:dcdb:eeff:fe35:9c68
+openit01.ring.nlnog.net;20261;;;DE;217.69.82.190;2001:aa8:ffeb::2
+virtualone01.ring.nlnog.net;47474;;;GB;128.127.31.126;2a01:a000:0:5::10
+onet01.ring.nlnog.net;12990;;;PL;141.105.16.129;2a02:c10:3f00:5::2
+zensystems01.ring.nlnog.net;28717;;;DK;109.202.131.110;2a01:4f0:3:8::2
+bahnhof01.ring.nlnog.net;8473;;;SE;195.178.185.171;2001:9b0:01:1107::2
+quanza01.ring.nlnog.net;20769;;;NL;91.208.87.80;2a04:a500:1337:764:91:208:87:80
+rcsrds01.ring.nlnog.net;8708;;;RO;82.76.255.222;2a02:2f0c:8000:f::2
+linxtelecom01.ring.nlnog.net;3327;;;EE;195.222.12.126;2001:ad0:1400:1000::2
+redpilllinpro01.ring.nlnog.net;39029;;;NO;87.238.49.250;2a02:c0:200:104::1
+netnod01.ring.nlnog.net;8674;;;SE;185.42.136.4;2a01:3f0:0:63::4
+mironet01.ring.nlnog.net;49983;;;CH;109.71.96.106;2a00:17E0:4000:7E2::6D47:606A
+belwue01.ring.nlnog.net;553;;;DE;129.143.4.179;2001:7c0:701:23::2
+ucsc01.ring.nlnog.net;5739;;;US;128.114.126.3;2607:f5f0:103:2::2
+viatel02.ring.nlnog.net;31122;;;FR;46.183.108.2;2a01:8aa0:7f00:0:20c:29ff:fe60:bfac
+citynetwork01.ring.nlnog.net;42695;;;SE;91.123.206.254;2a00:16d8:0:8::2
+nonattached01.ring.nlnog.net;57821;;;DE;193.160.39.24;2001:67c:26f4:16::24
+atechmedia01.ring.nlnog.net;60899;;;GB;185.22.208.142;2a00:67a0:a:2::142
+lagis01.ring.nlnog.net;35369;;;AT;83.164.134.32;2a00:1860:101:fffe::1
+seeweb01.ring.nlnog.net;12637;;;IT;85.94.202.10;2001:4b78:2100:3::1
+heanet01.ring.nlnog.net;1213;;;IE;193.1.33.23;2001:770:1c:7::c101:2117
+bredband201.ring.nlnog.net;29518;;;SE;82.209.169.88;2a00:1598:bb2::666
+westnet01.ring.nlnog.net;39093;;;IE;88.81.98.3;2a02:3d8:0:ffff::3
+selectel01.ring.nlnog.net;49505;;;RU;37.200.65.15;2a00:ab00:104:37:200:65:15:0
+dataoppdrag01.ring.nlnog.net;49409;;;NO;95.141.83.106;2a02:f58:5:5::2
+ripe atlas1;3265;3265;3265;NL;83.160.101.12;2001:981:6590:1:220:4aff:fec8:2532
+ripe atlas2;3265;3265;3265;NL;83.163.50.165;2001:980:57a4:1:220:4aff:fec8:244a
+ripe atlas3;3265;3265;3265;NL;83.163.239.181;2001:981:602b:1:220:4aff:fec8:2355
+ripe atlas4;3265;3265;3265;NL;83.68.21.139;2001:984:aee9:6:220:4aff:fec8:2464
+ripe atlas5;3333;3333;3333;NL;193.0.0.78;2001:67c:2e8:ffe2:220:4aff:fec6:cc9d
+ripe atlas6;3333;3333;3333;NL;193.0.10.197;2001:67c:2e8:13:220:4aff:fec8:25d5
+ripe atlas7;3333;3333;3333;NL;193.0.0.78;2001:67c:2e8:ffe2:220:4aff:fec6:cc6e
+ripe atlas8;3265;3265;3265;NL;82.95.178.49;2001:980:1203:1:220:4aff:fec6:cc56
+ripe atlas9;3265;3265;3265;NL;80.101.155.185;2001:981:88ba:1:220:4aff:febf:fd6f
+ripe atlas10;199422;199422;199422;FR;77.95.64.13;2a03:9180:1:20:220:4aff:fec8:229c
+ripe atlas11;5432;5432;5432;BE;91.180.37.127;2a02:a03f:1ce7:c00:220:4aff:fec8:231c
+ripe atlas12;29492;29492;29492;NO;95.169.56.60;2a02:a18:7510:201:220:4aff:fec8:22d5
+ripe atlas13;20621;20621;20621;DE;217.69.64.206;2001:aa8:fffe:3:220:4aff:fec8:2098
+ripe atlas14;6734;6734;6734;IT;147.123.15.2;2a02:9a8:1:100:220:4aff:fec8:24ca
+ripe atlas15;3303;3303;559;CH;46.14.191.101;2001:620:2010:103:220:4aff:fec8:254f
+ripe atlas16;29562;29562;8820;DE;46.237.194.252;2a01:170:1120:1120:220:4aff:fec8:2756
+ripe atlas17;3320;3320;4589;DE;84.172.132.168;2001:6f8:93d:0:220:4aff:fec8:230f
+ripe atlas18;22773;22773;22773;SG;98.167.187.217;2600:8800:1600:e98:220:4aff:fec8:20ae
+ripe atlas19;12859;12859;12859;NL;213.136.0.35;2001:7b8:610:0:220:4aff:fec8:24bd
+ripe atlas20;2607;2607;2607;SK;192.108.131.3;2001:4118:100:1:220:4aff:fec8:227a
+ripe atlas21;41164;41164;41164;NO;84.209.100.219;2a02:fe0:c410:483f:220:4aff:fec6:cd7a
+ripe atlas22;2852;2852;2852;CZ;195.113.232.222;2001:718:1:10:220:4aff:fec8:25bc
+ripe atlas23;39029;39029;39029;SE;87.238.56.246;2a02:c0:303::1
+ripe atlas24;3303;3303;3303;CH;83.77.61.224;2a02:1205:34d3:de08:220:4aff:fec6:cbe6
+ripe atlas25;12637;12637;12637;IT;85.94.192.29;2001:4b78:2:a:220:4aff:febf:fc46
+ripe atlas26;29134;29134;29134;CZ;217.31.48.35;2001:1ab0:7e1e:c:220:4aff:fec8:239a
+ripe atlas27;12637;12637;12637;IT;212.25.179.151;2001:4b78:1:f:220:4aff:fec8:22f6
+ripe atlas28;8903;8903;8903;ES;212.49.129.251;2001:ac0::220:4aff:febf:fd49
+ripe atlas29;6881;6881;6881;CZ;195.47.235.60;2a02:38::220:4aff:fec6:ccaf
+ripe atlas30;29695;29695;29695;NO;109.247.190.65;2a01:79d:b7de:f904:220:4aff:fec8:23ca
+ripe atlas31;25441;25441;1213;IE;87.192.78.152;2001:770:13f:0:220:4aff:fec8:2261
+ripe atlas32;34244;34244;34244;SE;85.30.131.37;2a02:80:3fff:0:220:4aff:fec8:2710
+ripe atlas33;6830;6830;6939;NL;77.249.28.253;2001:470:78dc:0:220:4aff:fec8:22a4
+ripe atlas34;39309;39309;39309;NL;88.159.164.218;2a01:670:6aa4:da00:220:4aff:fec8:2099
+ripe atlas35;766;766;766;ES;192.148.201.129;2001:720:418:caf7:220:4aff:fec6:cc71
+ripe atlas36;7477;7477;45920;AU;180.181.142.103;2401:a400:c400:4300:220:4aff:fec8:22e1
+ripe atlas37;4739;4739;4739;AU;59.167.217.120;2001:44b8:2156:2800:220:4aff:fec8:252a
+ripe atlas38;12731;12731;12731;DE;213.128.135.169;2001:868:100:2c0:220:4aff:fec8:2518
+ripe atlas39;2852;2852;2852;CZ;147.230.16.42;2001:718:1c01:16:220:4aff:fec8:24b5
+ripe atlas40;4739;4739;4739;AU;203.16.208.142;2001:44b8:1121:1a00:220:4aff:fec8:245d
+ripe atlas41;6083;6083;6083;ZA;160.124.48.190;2001:42a0:1000:48:220:4aff:fec8:2603
+ripe atlas42;2497;2497;55391;JP;202.32.5.41;2409:10:100:300:220:4aff:fec8:2574
+ripe atlas43;1103;1103;1103;NL;192.87.118.139;2001:610:514:118:220:4aff:febf:fdd4
+ripe atlas44;3333;3333;3333;NL;193.0.0.78;2001:67c:2e8:ffe2:220:4aff:fec8:232a
+ripe atlas45;2107;2107;2107;SI;193.2.63.13;2001:1470:8000:603:220:4aff:febf:fde6
+ripe atlas46;8359;8359;8359;RU;195.34.46.43;2a02:28:2:a:220:4aff:fec8:22d6
+ripe atlas47;137;137;137;IT;193.206.159.174;2001:760:0:159:220:4aff:fec8:250c
+ripe atlas48;13030;13030;13030;CH;82.197.168.110;2001:1620:2777:21:220:4aff:fec6:cc8d
+ripe atlas49;39912;39912;39912;AT;95.143.80.138;2a01:100:1028:0:220:4aff:fec8:24bc
+ripe atlas50;20845;20845;41075;HU;78.131.93.176;2a01:270:dd00:300:220:4aff:fec8:23e1
+ripe atlas51;5089;5089;6939;GB;86.24.149.236;2001:470:9579:1111:220:4aff:fec8:248c
+ripe atlas52;13188;13188;6939;UA;109.86.33.240;2001:470:d4b6:1:220:4aff:fec8:2471
+ripe atlas53;45345;45345;45345;NC;115.126.160.235;2404:e400:b:213:220:4aff:fec8:25b2
+ripe atlas54;39554;39554;16150;DK;90.184.94.86;2001:16d8:dda1:0:220:4aff:fec8:25be
+ripe atlas55;38299;38299;38299;NZ;210.7.44.28;2404:138:44:0:220:4aff:fec8:20a0
+ripe atlas56;2518;2518;2516;JP;125.195.72.227;240b:10:27c0:1f0:220:4aff:fec8:2318
+www.academic-network-security-research.net.in.tum.de;56357;;;DE;188.95.234.6;2a00:4700::3:230:48ff:fedf:433c
+account.net.in.tum.de.;12816;;;DE;131.159.15.26;2001:4ca0:2001:13:216:3eff:fead:288c
+acn.net.in.tum.de.;12816;;;DE;131.159.15.21;2001:4ca0:2001:13:216:3eff:fec7:6d64
+alamos.net.in.tum.de.;12816;;;DE;131.159.20.85;2001:4ca0:2001:11:f2de:f1ff:fe9b:57e2
+alcatraz.net.in.tum.de.;12816;;;DE;131.159.15.50;2001:4ca0:2001:13:225:90ff:fe10:e7f4
+amygdala.net.in.tum.de.;12816;;;DE;131.159.20.243;2001:4ca0:2001:11:225:90ff:fe7a:cb82
+antigone.net.in.tum.de.;12816;;;DE;131.159.20.165;2001:4ca0:2001:11:225:90ff:fe73:604
+archibelausch.net.in.tum.de.;12816;;;DE;131.159.14.82;2001:4ca0:2001:10:eea8:6bff:fef4:b705
+archipelago.net.in.tum.de.;12816;;;DE;131.159.14.83;2001:4ca0:2001:10:ba27:ebff:fe43:c805
+arro.net.in.tum.de.;12816;;;DE;131.159.20.190;2001:4ca0:2001:11:2ad2:44ff:fe60:6a84
+bendigo.bb.as.net.in.tum.de.;56357;;;DE;188.95.232.71;2a00:4700:0:1::7
+cadell.bb.as.net.in.tum.de.;56357;;;DE;188.95.232.65;2a00:4700:0:1::1
+carandiru.bb.as.net.in.tum.de. ;56357;;;DE;188.95.232.73;2a00:4700:0:1::9
+cooma.bb.as.net.in.tum.de.;56357;;;DE;188.95.232.72;2a00:4700:0:1::8
+bldngdroid.net.in.tum.de.;12816;;;DE;131.159.14.59;2001:4ca0:2001:10:216:3eff:fe9c:a259
+bozen.net.in.tum.de.;56357;;;DE;188.95.234.6;2a00:4700::3:230:48ff:fedf:433c
+dns1.net.in.tum.de.;12816;;;DE;131.159.14.197;2001:4ca0:2001:17::197
+email.net.in.tum.de.;12816;;;DE;131.159.15.232;2001:4ca0:2001:14:216:3eff:fe2d:94ba
+endlager.net.in.tum.de.;12816;;;DE;131.159.15.228;2001:4ca0:2001:14:216:3eff:fe28:64c3
+ilab2.net.in.tum.de.;12816;;;DE;131.159.15.37;2001:4ca0:2001:13:216:3eff:fea4:44a8
+ilab-control.net.in.tum.de.;12816;;;DE;131.159.15.60;2001:4ca0:2001:13:be5f:f4ff:fe4a:4917
+scylla.net.in.tum.de.;12816;;;DE;131.159.20.11;2001:4ca0:2001:11::2
+www.net.in.tum.de.;12816;;;DE;131.159.15.49;2001:4ca0:2001:13:250:56ff:fe9d:955
+pki.net.in.tum.de.;12816;;;DE;131.159.15.54;2001:4ca0:2001:13:216:3eff:fe30:d8c7
+www.first-colo.net.Â  ;44066;;;DE;212.224.70.17;2a01:7e0::212:224:70:17
+ams.first-colo.net.;44066;;;DE;212.224.70.15;2a01:7e0::212:224:70:15
