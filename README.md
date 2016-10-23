@@ -7,7 +7,8 @@ This repository hosts data and code for our research paper
 
 This code can, based on a set of associated A/AAAA DNS records, conduct TCP timestamp measurements and measure the clock skew of remote hosts. Based on this clock skew, it can contain discern whether a set of IPv4/IPv6 addresses is hosted on the same machine (siblings) or not (non-siblings). Our code works on nonlinear clock skew using spline fitting:
 
-<img src="spline.png?raw=true">
+<img src="spline.png?raw=true" style="width:100%;">
+
 
 # How to obtain our dataset
 
