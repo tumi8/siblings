@@ -55,12 +55,10 @@ int main(int argc, char** argv) {
       return 1;
   }
 
-  //cout << "capture finished" << endl;
   return 0;
 }
 
 const struct ether_header* ethernetHeader;
-//const struct ip* ipHeader;
 const struct tcphdr* tcpHeader;
 char sourceIp[INET6_ADDRSTRLEN];
 char destIp[INET6_ADDRSTRLEN];
@@ -71,12 +69,9 @@ string dataStr = "";
 unsigned int i,j=0;
 unsigned char cur;
 static char buf[200];
-//buf = (char*)malloc(200); // buf[200];
 static char buft[200];
-//buft = (char*)malloc(200); // buf[200];
 
 void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_char* packet) {
-  //cout << "." << std::flush;
   ethernetHeader = (struct ether_header*)packet;
   unsigned int headersize=0;
   unsigned int ts;
@@ -104,10 +99,8 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
           destPort = ntohs(tcpHeader->dest);
 	         // tcp->th_off = # of 32-bit words in header, of which 5 are basic header
 	        unsigned int option_bytes = (4*((unsigned int) 0xf & tcpHeader->th_off))-20;
-	        //cout << "option bytes: " << option_bytes << std::endl;
           char* opts = (char*)&tcpHeader[1];
 
-          //std::cout << "option_bytes: " << option_bytes << std::endl;
           for (i=0;i<option_bytes;){
             // we need a full TCP option parser here to find the TCP TS option
             // we step through all option until finding TCP TS
@@ -132,12 +125,6 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
               case 8: // timestamps
                 // check that length is 10 bytes as per RFC1323
                 if( (0xff & opts[i+1]) == 0x0a){
-                  // human readable
-                  /*std::cout << "sourceIP: "<< sourceIp  << " tsval: "<< ntohl(*(unsigned int*) &opts[i+2])
-                  << " rcv_ts: " << pkthdr->ts.tv_sec << "." << pkthdr->ts.tv_usec << std::endl; */
-                  //csv
-                  //std::cout << sourceIp  << "," << ntohl(*(unsigned int*) &opts[i+2])
-                  //<< "," << pkthdr->ts.tv_sec << "." << pkthdr->ts.tv_usec << std::endl;
                   // better csv: http://stackoverflow.com/questions/14432043/c-float-formatting
                   ts=ntohl(*(unsigned int*) &opts[i+2]);
                   if(ts==0) {
