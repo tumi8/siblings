@@ -4,7 +4,6 @@
     Can optionally print timestamps in a figure.
 """
 from __future__ import division
-#import re
 from scipy import stats
 import numpy as np
 import matplotlib
@@ -16,12 +15,7 @@ import os.path
 import time
 from sys import argv
 import sys
-#from builtins import range
-#from tstamps import get_port
-#from tstamps import get_data
-#from matplotlib2tikz import save as save_tikz
 from scipy.interpolate import LSQUnivariateSpline
-#import subprocess32 as sp
 import pickle
 from multiprocessing import Process
 import multiprocessing
@@ -71,19 +65,16 @@ class Consumer(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        #print("Starting consumer")
 
     def run(self):
         proc_name = self.name
         while True:
             next_task = self.task_queue.get()
-            #print("Got element, queue size: " + str(self.task_queue.qsize()))
             if next_task is None:
                 print('%s: Exiting' % proc_name)
                 break;
             else:
                 a=next_task()
-                #print("next task executed!")
                 self.result_queue.put(a)
                 self.task_queue.task_done()
         return
@@ -160,12 +151,10 @@ def calcsib(np4,np6,domain,ip4,ip6):
 
 
     # spline polynomial on [No] equal pieces of skew trend
-    # TODO Minoo: except continue does not look great? :)
     try:
         spl_arr_4, deriv_arr_4, xs4 = spline(s.bin_size_4, packed4)
         spl_arr_6, deriv_arr_6, xs6 = spline(s.bin_size_6, packed6)
     except:
-
         return
 
     mapped_diff = []  # diff between one curve and its mapped ones
@@ -230,7 +219,6 @@ class skews():
             Vi_arr.append(vi)
         slope = stats.linregress(Xi_arr, Vi_arr)[0]
         slope = round(slope)
-        #print("slope: " + str(slope))
         return (slope, Xi_arr, Vi_arr)
 
     def calOffsets(self, Xi_arr, Vi_arr, hz):
@@ -347,7 +335,6 @@ class skews():
         x_arr, y_arr = zip(*offset_arr)
         r_value = stats.linregress(x_arr, y_arr)[2]
         medslope, medintercept = stats.mstats.theilslopes(y_arr, x_arr)[0:2]
-        #print("calAlpha: done after : " + str(time.time()-time_start))
 
         return medslope, medintercept, r_value, r_value**2
 
@@ -362,14 +349,11 @@ class skews():
         recv_t = np[:, 1]
         tcp_t = np[:, 0]
         denoised_arr = []
-        #sliced = []
 
         if not recv_t.any() or not tcp_t.any():
             return None, None
 
-        #recv = self.calTimes(recv_t)
         hz, Xi_arr, Vi_arr = self.calHertz(recv_t, tcp_t)
-        #print(hz,Xi_arr[:10],Vi_arr[:10])
         # TODO: due to some circumstances Hz can be zero, causing a divide by zero in the next step
         offset_arr = self.calOffsets(Xi_arr, Vi_arr, hz)
         if offset_arr is None:
@@ -470,15 +454,11 @@ def plot(pp, index, host, arr4, arr6, ppd_arr=None, threshhold=None, a4=None, b4
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(X4, Y4, 'bo', color="blue", alpha=0.4, label="IPv4")
-    #ax1.plot(X4, Y4, 'k', color="blue", alpha=0.4)
     ax1.plot(X6, Y6, 'bo', color="red", alpha=0.4, label="IPv6")
-    #ax1.plot(X6, Y6,'k', color="red", alpha=0.4)
 
     if spl_arr4 and spl_arr6:
         xs4, spl_y4 = zip(*spl_arr4)
         xs6, spl_y6 = zip(*spl_arr6)
-        #xs4 = np.arange(X4[0], X4[-1], 120)
-        #xs6 = np.arange(X6[0], X6[-1], 120)
         ax1.plot(xs4, spl_y4, linewidth=4, color="blue", alpha=0.4)
         ax1.plot(xs6, spl_y6, linewidth=4, color="red", alpha=0.4)
 
@@ -521,16 +501,12 @@ def plot(pp, index, host, arr4, arr6, ppd_arr=None, threshhold=None, a4=None, b4
     # saving all in PDF
     pp.savefig(fig)
     plt.close(fig)
-    # saving with Tikz
-    #     fig_name = "../plots/TEX/host_" + str(index+1) + ".tex"
-    #     save_tikz(fig_name)
 
 def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_diff, spl_diff_85, dataset=None):
     """ Theta is not used """
     passed = False
     validslope_metric = 0.81  # linear slopes obtained by r values and plots (r value of 0.9 or greater)
     rsqr_diff_metric = 0.2
-    #ppdrange_metric = 22.94 #obtained from cdf_99 percentile
     neglig_skew_metric = 1.5  # obtained from the plots
     ott_rng_diff_metric = 0.47  # obtained from cdf (whole dataset) for one negligible skew
     slope_diff_metric = 0.00005  # obtained from cdf (whole dataset)
@@ -564,7 +540,6 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_di
 
     # significant rsquare with same slope sign and small slope diff or else continue to the next step (and not clasify and non-siblings)
     elif (r4_square >= validslope_metric and r6_square >= validslope_metric) and ((a4 > 0 and a6 > 0) or (a4 < 0 and a6 < 0)) and (abs(a4 - a6) <= slope_diff_metric):
-        # print "small slope! linear trend"
         const_skew += 1
         final_dec += "sibling(valid slope/small slope diff)"
         if dataset == "non-sib":
@@ -631,15 +606,6 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_di
 
 
 def preamble2():
-    # sc = None #scope param to pass to two process functions
-    # fol_name = argv[1] #which results (belonging to which date to plot)
-    # scope = None # = argv[2] #all, denoised, one(-hour :  denoised from 4-5), two(-hours : denoised from 4-6)
-    # dataset = argv[3] #refering to Sibling or non-siblings dataset (sib, non-sib)
-    #traces_path_rel = ""
-    #scope_name = ""
-    # usage_msg = """Scope argument not correct\nUsage: ./script-name folder-name scope[all, denoised, one, two],
-    # dataset [sib, non-sib]"""
-
     csv_path_abs = os.path.abspath(argv[2] + ".siblingresult.csv")
     logfile = open(os.path.abspath(argv[2] + ".skewalgolog.txt"),"w")
     plot_name = os.path.abspath(argv[2] + ".plots.pdf")
@@ -740,24 +706,12 @@ def mapCurve(cln_4, cln_6):
         y_mapped = v4_arr[:up_rng] - mean_diff
     else:
         y_mapped = v6_arr[:up_rng] - abs(mean_diff)
-    #print("mapCurve cp 1 ",  str(time.time()-time_before))
-    """
-    # python and I really hate for loops, so we use the vector version above
-    for i in range(up_rng):
-        if mean_diff > 0:
-            y_mapped.append(v4_arr[i] - mean_diff)
-        else:
-            y_mapped.append(v6_arr[i] - abs(mean_diff))
-    """
-    #print("mapCurve cp 2 " , str(time.time()-time_before))
-    #print("mapCurve diff: ", y_mapped2-y_mapped)
     if mean_diff >= 0:
         x_mapped = xs4[:up_rng]
         curve = "6"
     else:
         x_mapped = xs6[:up_rng]
         curve = "4"
-    #print("mapCurve cp 3 "+ str(time.time()-time_before))
     return zip(x_mapped, y_mapped), abs(mean_diff), curve
 
 
@@ -814,7 +768,7 @@ if __name__ == ("__main__"):
                         continue
                 else:
                     d[ip] = \
-                        np.zeros((10000,2),dtype=np.float64) #[("f1",np.uint64),("f2",np.float64)])
+                        np.zeros((10000,2),dtype=np.float64)
                     p[ip] = 0
                     d[ip][p[ip], :] = [np.float64(tcpt),np.float64(0.0)]
                     p[ip] = p[ip]+1
@@ -891,11 +845,6 @@ if __name__ == ("__main__"):
                         writer.writerow([s.domain, s.ip4, s.ip6, s.a4, None, None, s.r4_sqr, s.a6, None, None, s.r6_sqr,
                                         None, None, None, s.ott4_rng, s.ott6_rng,
                                         s.ott_rng_diff, None, s.perc_85_val, s.dec])
-                        #pickle.dump(s,pklfileres)
-                        #plot(pp, s.domain, s.domain, s.mean_cln_4, s.mean_cln_6, ppd_arr=None, threshhold=None,
-                        #     a4=None, b4=None, a6=None, b6=None, data=None, spl_arr4=None, spl_arr6=None, xs=None,
-                        #     cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=s.bin_size_4, q6_1=None,
-                        #     q6_2=None, q6_3=None, bin_size_6=s.bin_size_6, max=None, min=None, sub=None)
 
             count=count+1
             continue
@@ -929,12 +878,6 @@ if __name__ == ("__main__"):
                             None, None, None, s.ott4_rng, s.ott6_rng,
                             s.ott_rng_diff, None, s.perc_85_val, s.dec])
             objectscache[(s.ip4,s.ip6)] = s
-            #pickle.dump(s,pklfileres)
-            #plotclass(pp,s)
-            #plot(pp, s.domain, s.domain, s.mean_cln_4, s.mean_cln_6, ppd_arr=None, threshhold=None,
-            #     a4=None, b4=None, a6=None, b6=None, data=None, spl_arr4=None, spl_arr6=None, xs=None,
-            #     cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=s.bin_size_4, q6_1=None,
-            #     q6_2=None, q6_3=None, bin_size_6=s.bin_size_6, max=None, min=None, sub=None)
         else:
             print("s empty!")
     print("results queue size: " + str(results.qsize()))
