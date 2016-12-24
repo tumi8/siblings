@@ -21,11 +21,11 @@ import string
 import random
 import gc
 
-input_csv = sys.argv[1]
-capture_if = sys.argv[2]
+input_csv = "" #sys.argv[1]
+capture_if = "" #sys.argv[2]
 
 def start_capture():
-""" calls tcpdump to capture packets """
+	""" calls tcpdump to capture packets """
 	now=datetime.datetime.now()
 	date=datetime.date.today()
 	pcapfile="sibling-measurement-"+str(date.year)+str(date.month).zfill(2)+ \
@@ -48,7 +48,7 @@ def start_capture():
 	return tcpdumpprocesslocal
 
 class Consumer(multiprocessing.Process):
-""" Measurement class, consumes tasks from queues"""
+	""" Measurement class, consumes tasks from queues"""
 	# inspired by : https://pymotw.com/2/multiprocessing/communication.html
 	def __init__(self, task_queue):
 		multiprocessing.Process.__init__(self)
@@ -80,24 +80,28 @@ class Consumer(multiprocessing.Process):
 			t.join()
 
 def randurl(size=10, chars=string.ascii_uppercase + string.digits):
-""" creates a random URL to query to avoid caching"""
+	""" creates a random URL to query to avoid caching"""
 	return ''.join(random.choice(chars) for _ in range(size))
 
 
-class dummy_mkget(object):
-""" dummy class for debugging"""
-	def __init__(self, ip):
+class DummyMsrIPPort(object):
+	""" measurement class for ip and port"""
+	def __init__(self, ip, port):
 		self.ip = ip
+		self.port = port
 	def __call__(self):
-		print("not really making connection to " + str(self.ip))
+		print("not making connection to IP {} on port {}".format(self.ip, self.port))
 		time.sleep(10)
 
-class rl_mkget(object):
-""" measurement class"""
-	def __init__(self, ip):
+
+class MsrIPPort(object):
+	""" measurement class for ip and port"""
+	def __init__(self, ip, port):
 		self.ip = ip
+		self.port = port
 	def __call__(self):
 		ip=self.ip
+		port=self.port
 		# wait random time before starting measurement to better spread measurements within each minute
 		time.sleep(random.randint(0,60))
 		self.start_time = time.time()
@@ -107,9 +111,9 @@ class rl_mkget(object):
 		# collect timestamps without a new connection
 		socket_options = urllib3.connection.HTTPConnection.default_socket_options + [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), ]
 		if ':' in ip: # simplistic IPv6 detection
-			conn = urllib3.connection_from_url('http://['+ip+']:80', retries=0, socket_options=socket_options)
+			conn = urllib3.connection_from_url('http://['+ip+']:'+port, retries=0, socket_options=socket_options)
 		else: # IPv4
-			conn = urllib3.connection_from_url('http://'+ip+':80', retries=0, socket_options=socket_options)
+			conn = urllib3.connection_from_url('http://'+ip+':'+port, retries=0, socket_options=socket_options)
 
 		conn.headers = urllib3.make_headers(keep_alive=True,user_agent="python-urllib3/0.6__research_scan")
 		self.i=0
@@ -127,14 +131,15 @@ class rl_mkget(object):
 			self.i+=1
 		conn.close()
 
+
 def set_sys_settings():
-"""
+	"""
 	set linux system settings to optimize TS collection.
     Please note that these settings are not sane defaults
 	and should only be used during the measurement on a specific machine.
 	Obviously, restore to values before running this application would be
 	a good improvement here.
-"""
+	"""
 	# these also apply to IPv6: https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
 	f=open('/proc/sys/net/ipv4/tcp_keepalive_time','w') # Start TCP keepalive after 10s
 	f.write('10')
@@ -162,7 +167,7 @@ def set_sys_settings():
 	f.close()
 
 def unset_sys_settings():
-""" reset TCP Keepalive to default"""
+	""" reset TCP Keepalive to default"""
 	f=open('/proc/sys/net/ipv4/tcp_keepalive_time','w')
 	f.write('7200')
 	f.close()
@@ -170,10 +175,24 @@ def unset_sys_settings():
 	f.write('60')
 	f.close()
 
+def main(argv):
+	dryrun=True
+	global input_csv
+	global capture_if
+	input_csv = sys.argv[1]
+	capture_if = sys.argv[2]
+	try:
+		if sys.argv[3] == "dryrun":
+			pass
+		elif sys.argv[3] == "measure":
+			dryrun=False
+	except:
+		pass
 
-if __name__ == ("__main__"):
-	set_sys_settings() # configure tcp keepalive system-wide settings
-	tcpdumpprocess = start_capture() # start tcpdump capture
+	if not dryrun:
+		set_sys_settings() # configure tcp keepalive system-wide settings
+		tcpdumpprocess = start_capture() # start tcpdump capture
+
 	starttime=time.time()
 
 	tasks = multiprocessing.JoinableQueue()
@@ -183,23 +202,55 @@ if __name__ == ("__main__"):
 	for w in consumers:
 		w.start()
 
-	with open( sys.argv[1]) as csvfile:
+	with open(sys.argv[1]) as csvfile:
 		csvreader=csv.reader(csvfile)
 		for row in csvreader:
 			#for i in row[1:]: # this is for reading format domain,ip6,ip4
-			for i in row: # this is for format <ip,>*n
-				if i:
+			if dryrun:
+				print("DEBUG: row len is {}, row: {}".format(len(row), row))
+			# this reads a line format of RA_6211;109.70.107.25;2001:4130:107::25;80;ripeatlas
+			if(len(row) == 5):
+				hn=row[0]
+				ip4=row[1]
+				ip6=row[2]
+				port=row[3]
+				if(sys.platform != "darwin"): # function is not implemented on macOS
 					while(tasks.qsize() > num_consumers):
 						time.sleep(0.0001) # sleep a bit to avoid flooding the queue
-					print("feeding IP into task queue: " + str(i))
-					tasks.put(rl_mkget(i))
+				print("feeding IPs+Port into task queue: {} {} {}".format(ip4, ip6, port))
+				assert 0 < int(port) < 2**16
+				if not dryrun:
+					tasks.put(MsrIPPort(ip4, port))
+					tasks.put(MsrIPPort(ip6, port))
+				else:
+					tasks.put(DummyMsrIPPort(ip4, port))
+					tasks.put(DummyMsrIPPort(ip6, port))
+			else:
+				for i in row: # this is for format <ip,>*n (ip1, ip2, ip3)
+					if i:
+						if(sys.platform != "darwin"): # function is not implemented on macOS
+							while(tasks.qsize() > num_consumers):
+								time.sleep(0.0001) # sleep a bit to avoid flooding the queue
+						print("feeding IP into task queue: " + str(i))
+						if not dryrun:
+							tasks.put(MsrIPPort(i, "80"))
+						else:
+							tasks.put(DummyMsrIPPort(i, "80"))
 
 	sys.stderr.write("all threads started after seconds: "+str(time.time()-starttime)+"\n")
-	time.sleep(60*60*10) # sleep main process for 10 hours
+	if not dryrun:
+		time.sleep(60*60*10) # sleep main process for 10 hours
+	else:
+		time.sleep(30) # just sleep a bit so all the processes can exit
+
 	for w in consumers:
 		w.terminate()
 
-	tcpdumpprocess.terminate() # important to 'terminate' so pcap file is written out nicely
-	time.sleep(60)
-	unset_sys_settings()
-	time.sleep(1)
+	if not dryrun:
+		tcpdumpprocess.terminate() # important to 'terminate' so pcap file is written out nicely
+		time.sleep(60)
+		unset_sys_settings()
+		time.sleep(1)
+
+if __name__ == ("__main__"):
+	main(sys.argv)
