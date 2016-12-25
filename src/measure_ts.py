@@ -20,6 +20,9 @@ import multiprocessing
 import string
 import random
 import gc
+import time # to format logging string
+import logging
+
 
 input_csv = "" #sys.argv[1]
 capture_if = "" #sys.argv[2]
@@ -90,7 +93,14 @@ class DummyMsrIPPort(object):
 		self.ip = ip
 		self.port = port
 	def __call__(self):
-		print("not making connection to IP {} on port {}".format(self.ip, self.port))
+		logging.debug("DummyMsrIPPort: not connecting to IP {} on port {}".format(self.ip, self.port))
+		if ':' in self.ip: # simplistic IPv6 detection
+			url = 'http://['+self.ip+']:'+self.port
+			#conn = urllib3.connection_from_url('http://['+ip+']:'+port, retries=0, socket_options=socket_options)
+		else: # IPv4
+			url = 'http://'+self.ip+':'+self.port
+			#conn = urllib3.connection_from_url('http://'+ip+':'+port, retries=0, socket_options=socket_options)
+		logging.debug("url: {}".format(url))
 		time.sleep(10)
 
 
@@ -111,22 +121,27 @@ class MsrIPPort(object):
 		# collect timestamps without a new connection
 		socket_options = urllib3.connection.HTTPConnection.default_socket_options + [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), ]
 		if ':' in ip: # simplistic IPv6 detection
-			conn = urllib3.connection_from_url('http://['+ip+']:'+port, retries=0, socket_options=socket_options)
+			url = 'http://['+ip+']:'+port
+			#conn = urllib3.connection_from_url('http://['+ip+']:'+port, retries=0, socket_options=socket_options)
 		else: # IPv4
-			conn = urllib3.connection_from_url('http://'+ip+':'+port, retries=0, socket_options=socket_options)
-
+			url = 'http://'+ip+':'+port
+			#conn = urllib3.connection_from_url('http://'+ip+':'+port, retries=0, socket_options=socket_options)
+		logging.debug("url: {}".format(url))
+		conn = urllib3.connection_from_url(url, retries=0, socket_options=socket_options)
 		conn.headers = urllib3.make_headers(keep_alive=True,user_agent="python-urllib3/0.6__research_scan")
 		self.i=0
 		while time.time() < self.end_time:
-			print("making connection #" + str(self.i) + " to " +str(self.ip))
+			logging.debug("making connection #" + str(self.i) + " to " +str(self.ip)+ " on port " + str(self.port))
 			try:
 				conn.request('GET','/research_scan_'+randurl(), timeout=urllib3.util.timeout.Timeout(10))
 			except urllib3.exceptions.MaxRetryError as e:
-				print("MaxRetryError on IP: " + str(self.i) + " to " +str(self.ip) + " exception: " + str(e.args))
+				#print("MaxRetryError on IP: " + str(self.i) + " to " +str(self.ip) + " exception: " + str(e.args))
+				logging.debug("MaxRetryError on IP: " + str(self.i) + " to " +str(self.ip) + "on port " + str(self.port) + " exception: " + str(e.args))
 				pass
 			except urllib3.exceptions.TimeoutError as e:
 				print("TimeoutError on IP: " + str(self.i) + " to " +str(self.ip) + " exception: " + str(e.args))
-				break;
+				logging.warning("TimeoutError on IP: " + str(self.i) + " to " +str(self.ip) + " on port " + str(self.port) + " exception: " + str(e.args))
+				break
 			time.sleep(60)
 			self.i+=1
 		conn.close()
@@ -189,9 +204,14 @@ def main(argv):
 	except:
 		pass
 
+	print("DRYRUN: {}".format(dryrun))
+
 	if not dryrun:
 		set_sys_settings() # configure tcp keepalive system-wide settings
 		tcpdumpprocess = start_capture() # start tcpdump capture
+
+	format='%(asctime)s - %(levelname)-7s - %(message)s'
+	logging.basicConfig(filename=input_csv+'.log', level=logging.DEBUG, format=format, filemode='w')
 
 	starttime=time.time()
 
@@ -206,8 +226,8 @@ def main(argv):
 		csvreader=csv.reader(csvfile)
 		for row in csvreader:
 			#for i in row[1:]: # this is for reading format domain,ip6,ip4
-			if dryrun:
-				print("DEBUG: row len is {}, row: {}".format(len(row), row))
+
+			logging.debug("DEBUG: row len is {}, row: {}".format(len(row), row))
 			# this reads a line format of RA_6211;109.70.107.25;2001:4130:107::25;80;ripeatlas
 			if(len(row) == 5):
 				hn=row[0]
@@ -217,7 +237,7 @@ def main(argv):
 				if(sys.platform != "darwin"): # function is not implemented on macOS
 					while(tasks.qsize() > num_consumers):
 						time.sleep(0.0001) # sleep a bit to avoid flooding the queue
-				print("feeding IPs+Port into task queue: {} {} {}".format(ip4, ip6, port))
+				logging.debug("feeding IPs+Port into task queue: {} {} {}".format(ip4, ip6, port))
 				assert 0 < int(port) < 2**16
 				if not dryrun:
 					tasks.put(MsrIPPort(ip4, port))
@@ -231,13 +251,14 @@ def main(argv):
 						if(sys.platform != "darwin"): # function is not implemented on macOS
 							while(tasks.qsize() > num_consumers):
 								time.sleep(0.0001) # sleep a bit to avoid flooding the queue
-						print("feeding IP into task queue: " + str(i))
+						logging.debug("feeding IP into task queue: " + str(i))
 						if not dryrun:
 							tasks.put(MsrIPPort(i, "80"))
 						else:
 							tasks.put(DummyMsrIPPort(i, "80"))
 
 	sys.stderr.write("all threads started after seconds: "+str(time.time()-starttime)+"\n")
+	logging.info("all threads started after seconds: "+str(time.time()-starttime))
 	if not dryrun:
 		time.sleep(60*60*10) # sleep main process for 10 hours
 	else:
