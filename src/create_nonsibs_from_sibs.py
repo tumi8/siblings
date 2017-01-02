@@ -30,14 +30,14 @@ random.shuffle(arr)
 #print(arr)
 
 outfname = "{}__nonsiblings_seed{}".format(sys.argv[1], seed)
-fd = open(outfname, "a")
-writer = csv.writer(fd)
+fd = open(outfname, "w")
+#writer = csv.writer(fd)
 
 for i in range(len(arr)):
     #orig_line = "{},{},{}".format(arr[i][0],arr[i][1],arr[i][2]) # offset IPv6
     line = "{}_+_{},{},{}".format(arr[i][0], arr[(i+1)%len(arr)][0], arr[i][1], arr[(i+1)%len(arr)][2]) # offset IPv6
     #print("orig_line:", orig_line)
     #print("chng_line:", line)
-    writer.writerow(line)
+    fd.write(line+"\n")
 
 print("Written non-siblings of seed {} to file {}".format(seed, outfname))
