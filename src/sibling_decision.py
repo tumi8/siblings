@@ -3,7 +3,10 @@
     The sibling decision algorithm.
     Can optionally print timestamps in a figure.
 """
+
 from __future__ import division
+#import warnings
+#warnings.filterwarnings("ignore",category=DeprecationWarning)
 from scipy import stats
 import numpy as np
 import matplotlib
@@ -22,6 +25,8 @@ import multiprocessing
 import time
 import traceback
 from collections import Counter
+import logging
+
 
 ppd_rng_elm = 0
 ott_rng_elm = 0
@@ -80,42 +85,59 @@ class Consumer(multiprocessing.Process):
         return
 
 class rl_calcsib(object):
-    def __init__ (self,np4,np6,domain,ip4,ip6):
-        self.np4=np4
-        self.np6=np6
-        self.domain=domain
-        self.ip4=ip4
-        self.ip6=ip6
+    def __init__ (self,np4,offset4, np6, offset6, domain,ip4,ip6):
+        self.np4 = np4
+        self.offset4 = offset4
+        self.np6 = np6
+        self.offset6 = offset6
+        self.domain = domain
+        self.ip4 = ip4
+        self.ip6 = ip6
 
     def __call__(self):
         try:
-            s = calcsib(self.np4,self.np6,self.domain,self.ip4,self.ip6)
+            s = calcsib(self.np4 ,self.offset4 , self.np6, self.offset6, self.domain ,self.ip4 ,self.ip6 )
         except Exception as e:
-            print("error in calcsib for " + self.domain + " " +  self.ip4 + " " + self.ip6)
-            print("error: " + str(e))
-            traceback.print_exc()
+            #print("error in calcsib for {} {} {}, error: {}, np4: {}, np6: {} ".format(self.domain, self.ip4, self.ip6, e, self.np4, self.np6))
+            logging.error("error in calcsib for {} {} {}, error: {}, np4: {}, np6: {} ".format(self.domain, self.ip4, self.ip6, e, self.np4, self.np6))
+            raise
+            #traceback.print_exc()
+        #    raise
             return None
         else:
             return s
 
-def calcsib(np4,np6,domain,ip4,ip6):
+def calcsib(np4,offset4in, np6, offset6in, domain,ip4,ip6):
     s = skews()  # instantiation of skew class
     s.domain=domain
     s.ip4=ip4
     s.ip6=ip6
-    ignore, den_arr4 = s.processTrace2(np4)
-    ignore, den_arr6 = s.processTrace2(np6)
+    ignore, den_arr4, ignore2 = s.processTrace2(np4, 4)
+    ignore, den_arr6, ignore2 = s.processTrace2(np6, 6)
+    # check that Hz are similar
+    if abs(s.hz4 - s.hz6) > 0.1:
+        logging.warning("calcsib: hz different for domain {}, hz4 {}, hz6 {}".format(s.domain, s.hz4, s.hz6))
+        # TODO - take non-sibling decision here!
+
+    # check how close raw tcp ts values are
+    td_tcpt = (s.tcp_t_offset6 - s.tcp_t_offset4)/np.mean([s.hz4, s.hz6]) # time distance between initial tcp timestamp v4/v6 in seconds
+    offset4 = np.float(offset4in)/(1000*1000) # convert from microseconds to s
+    offset6 = np.float(offset6in)/(1000*1000) # convert from microseconds to s
+    logging.debug("calcsib: domain {}, offset6 {}, offset4 {}".format(domain, offset6, offset4))
+    td_rcvt = np.float64(offset6)-np.float64(offset4) # difference in first recv_t in seconds
+    s.timestamps_diff = abs(td_tcpt - td_rcvt) # difference in tcp ts in seconds
+
     # mean remover (second level denoising)
     if den_arr4 is None:
-        print("den_arr4 empty!")
+        #print("den_arr4 empty!")
         s.dec = "error: den_arr4 empty!"
         return s
     else:
         s.mean_cln_4 = s.meanRemover(den_arr4)
 
     if den_arr6 is None:
-        print("den_arr6 empty!")
-        s.dec = "error: den_arr4 empty!"
+        #print("den_arr6 empty!")
+        s.dec = "error: den_arr6 empty!"
         return s
     else:
         s.mean_cln_6 = s.meanRemover(den_arr6)
@@ -152,23 +174,26 @@ def calcsib(np4,np6,domain,ip4,ip6):
 
     # spline polynomial on [No] equal pieces of skew trend
     try:
-        spl_arr_4, deriv_arr_4, xs4 = spline(s.bin_size_4, packed4)
-        spl_arr_6, deriv_arr_6, xs6 = spline(s.bin_size_6, packed6)
-    except:
-        return
+        s.spl_arr4, deriv_arr_4, xs4 = spline(s.bin_size_4, packed4)
+        s.spl_arr6, deriv_arr_6, xs6 = spline(s.bin_size_6, packed6)
+        s.xs4 = xs4
+        s.xs6 = xs6
+    except Exception as e:
+        logging.error("calcsib spline exception: {}, parameters: s.bin_size_4 {} \n packed4 {} \ns.bin_size_6 {}\n packed6 {}\n".format(e, s.bin_size_4, packed4, s.bin_size_6, packed6))
+        raise
 
     mapped_diff = []  # diff between one curve and its mapped ones
-    mapped, spline_mean_diff, curve = mapCurve(list(zip(xs4, spl_arr_4)), list(zip(xs6, spl_arr_6)))
+    mapped, spline_mean_diff, curve = mapCurve(list(zip(xs4, s.spl_arr4)), list(zip(xs6, s.spl_arr6)))
     y_mapped = [v for u, v in mapped]
     if curve == "4":
-        up_rng = min(len(y_mapped), len(spl_arr_4))
-        mapped_diff2 = abs(y_mapped[:up_rng] - spl_arr_4[:up_rng])
+        up_rng = min(len(y_mapped), len(s.spl_arr4))
+        mapped_diff2 = abs(y_mapped[:up_rng] - s.spl_arr4[:up_rng])
         for i in range(up_rng):
-            mapped_diff.append(abs(y_mapped[i] - spl_arr_4[i]))
+            mapped_diff.append(abs(y_mapped[i] - s.spl_arr4[i]))
     elif curve == "6":
-        up_rng = min(len(y_mapped), len(spl_arr_6))
+        up_rng = min(len(y_mapped), len(s.spl_arr6))
         for i in range(up_rng):
-            mapped_diff.append(abs(y_mapped[i] - spl_arr_6[i]))
+            mapped_diff.append(abs(y_mapped[i] - s.spl_arr6[i]))
 
     # cal the percentiles of diffs for two mapped curves
     cdf_arr = calCDF(mapped_diff)
@@ -183,6 +208,7 @@ def calcsib(np4,np6,domain,ip4,ip6):
         s.perc_85_val = perc_85_arr[middle_inx]
     except Exception as e:
         print("calcsib failed at perc_val: " + str(e))
+        logging.warning("calcsib failed at perc_val: " + str(e)) # needs more context
         s.dec = "error_percval!"
         return s;
 
@@ -203,10 +229,15 @@ class skews():
     ott_rng_diff = None
     perc_85_val=None
     bin_size_4, bin_size_6 = None, None
+    spl_arr4, spl_arr6, xs4, xs6 = None, None, None, None # required to plot skew lines
+    hz4, hz6, tcp_t_offset4, tcp_t_offset6, hz4r2, hz6r2 = None, None, None, None, None, None # hz for clock detection (Kohno et al.)
+    timestamps_diff = None # difference between raw v4 and raw v6 tcp ts
 
-    def calHertz(self, rcv_t, tcp_t):
-        """Given the set of observed TCPtimestamp values, compute the frequency
-        of the fingerprintee (Herz) which is indicated by the slope variable"""
+    def calHertz__old(self, rcv_t, tcp_t):
+        """ From rec_t and tcp_t, calculate Hertz of remote clock
+            hertz is slope of linear regression
+            Based on Kohno 2005 paper
+        """
 
         # Calculating Offsets
         Xi_arr = []
@@ -215,10 +246,49 @@ class skews():
         for i in range(len(rcv_t)):
             xi = rcv_t[i] - rcv_t[0]
             vi = tcp_t[i] - tcp_t[0]
-            Xi_arr.append(xi)
+            Xi_arr.append(xi) # TODO: improve -- repeated appends are slow, replace with indexing into pre-populated array
             Vi_arr.append(vi)
-        slope = stats.linregress(Xi_arr, Vi_arr)[0]
-        slope = round(slope)
+        slope, intercept, rval, pval, stderr = stats.linregress(Xi_arr, Vi_arr)
+        hzr2 = rval*rval
+        slope = round(slope) # TODO: Why round?
+        return (slope, Xi_arr, Vi_arr)
+
+    def calHertz(self, rcv_t, tcp_t, ver):
+        """ From rec_t and tcp_t, calculate Hertz of remote clock
+            hertz is slope of linear regression
+            Based on Kohno 2005 paper
+            ver is 4 or 6
+        """
+
+        # Calculating Offsets
+        count = len(rcv_t)
+        Xi_arr = np.zeros(count-1)
+        Vi_arr = np.zeros(count-1)
+
+        for i in range(1, count-1):
+            #xi = rcv_t[i] - rcv_t[0]
+            xi = rcv_t[i] # rcv_t is alreay zero-based
+            vi = tcp_t[i] - tcp_t[0]
+            Xi_arr[i] = xi
+            Vi_arr[i] = vi
+        # rcv_t is already zero-based upon data load
+        #Xi_arr = rcv_t
+        slope, intercept, rval, pval, stderr = stats.linregress(Xi_arr, Vi_arr)
+        hzr2 = rval*rval
+        #logging.debug("calHertz: domain {} rcv_t is {}".format(self.domain, rcv_t))
+        logging.debug("calHertz: domain {} count is {}, slope {}, intercept {}, hzr2 {}, pval {}, stderr {}, rcv_t1 {}, tcp_t0 {}, Xi_arr is {}, Vi_arr {}".format(
+            self.domain, count, slope, intercept, hzr2, pval, stderr, rcv_t[1], tcp_t[0], None, None))
+        slope = round(slope) # TODO: Why round?
+        if ver == 4:
+            self.hz4 = slope
+            self.hz4r2 = hzr2
+            self.tcp_t_offset4 = tcp_t[0]
+        elif ver == 6:
+            self.hz6 = slope
+            self.hz6r2 = hzr2
+            self.tcp_t_offset6 = tcp_t[0]
+        else:
+            logging.error("calhertz incorrectly called with ver {}".format(ver))
         return (slope, Xi_arr, Vi_arr)
 
     def calOffsets(self, Xi_arr, Vi_arr, hz):
@@ -334,27 +404,41 @@ class skews():
         time_start =time.time()
         x_arr, y_arr = zip(*offset_arr)
         r_value = stats.linregress(x_arr, y_arr)[2]
-        medslope, medintercept = stats.mstats.theilslopes(y_arr, x_arr)[0:2]
+        try:
+            medslope, medintercept = stats.mstats.theilslopes(y_arr, x_arr)[0:2]
+        except FloatingPointError as e:
+            logging.error("CRITICAL: theilslopes FloatingPointError {} for arrays y_arr {} and x_arr {} of domain {}".format(e, y_arr,x_arr, self.domain))
+        except Exception as e:
+            logging.error("CRITICAL: theilslopes Other error {} for arrays y_arr {} and x_arr {} of domain {}".format(e, y_arr,x_arr, self.domain))
+            raise
 
         return medslope, medintercept, r_value, r_value**2
 
     def exportData(self, writer, i, theta, a4, b4, r4, r_sqr4, a6, b6, r6, r_sqr6, ppd_median, ppd_mean, spline_mean_diff, ott4_rng, ott6_rng, ott_rng_diff,
                    dec, ppd_rng, perc_85_mapped_diff):
+        # not used
+        import sys
+        print("ERORR: Used function exportData")
+        sys.exit(1)
         """Exports the estimated line by the calAlpha function and the host number and IP pair to a csv file """
 
-        writer.writerow([i, theta, a4, b4, r4, r_sqr4, a6, b6, r6, r_sqr6, ppd_median, ppd_mean, spline_mean_diff, ott4_rng, ott6_rng, ott_rng_diff,
-                         ppd_rng, perc_85_mapped_diff, dec])
+        #writer.writerow([i, theta, a4, b4, r4, r_sqr4, a6, b6, r6, r_sqr6, ppd_median, ppd_mean, spline_mean_diff, ott4_rng, ott6_rng, ott_rng_diff,
+        #                 ppd_rng, perc_85_mapped_diff, dec])
 
-    def processTrace2(self, np):
-        recv_t = np[:, 1]
+    def processTrace2(self, np, ver):
         tcp_t = np[:, 0]
+        recv_t = np[:, 1]
         denoised_arr = []
 
-        if not recv_t.any() or not tcp_t.any():
+        if not recv_t.any() or not tcp_t.any(): # TODO this is bad as it does not check for existence but rather for any values to be true
             return None, None
 
-        hz, Xi_arr, Vi_arr = self.calHertz(recv_t, tcp_t)
+        hz, Xi_arr, Vi_arr = self.calHertz(recv_t, tcp_t, ver)
         # TODO: due to some circumstances Hz can be zero, causing a divide by zero in the next step
+        #logging.debug("")
+        if abs(hz) < 1:
+            logging.warning("processTrace2: abs(hz) < 1 for domain {}".format(self.domain))
+            return None, None
         offset_arr = self.calOffsets(Xi_arr, Vi_arr, hz)
         if offset_arr is None:
             print("offset_arr empty!")
@@ -364,7 +448,7 @@ class skews():
         if denoised_arr is None:
             print("denoised_arr empty!")
             sys.exit(1)
-        return offset_arr, denoised_arr
+        return offset_arr, denoised_arr, hz
 
     def delOutliers(self, mean_thresh, den_arr4, den_arr6, idx6_arr, ppd_arr):
         """Deletes the outliers that stand two standard deviation away from the mean, the result will be used
@@ -425,24 +509,52 @@ class skews():
 def timeStamp(writer):
     writer.writerow(["File creation time: " + time.ctime()])
 
-def plotclassfrompickle():
-    plot_name = os.path.abspath(argv[2] + ".plots.pdf")
+def plotclassfrompickle(tsfile, mode):
+    plot_name = os.path.abspath(tsfile +"."+mode+".plots.pdf")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
-    pklfile=open(tstampscsv+".resultspickle",'rb')
+    pklfile=open(tsfile+"."+mode+".resultspickle",'rb')
     d = pickle.load(pklfile)
     pklfile.close()
     for _,s in d.items():
         plotclass(pp,s)
     pp.close()
+    print("Plotted to file {}".format(tsfile +"."+mode+".plots.pdf"))
 
 def plotclass(pp,s):
-    plot(pp, s.domain, s.domain, s.mean_cln_4, s.mean_cln_6, ppd_arr=None, threshhold=None,
-         a4=None, b4=None, a6=None, b6=None, data=None, spl_arr4=None, spl_arr6=None, xs=None,
-         cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=s.bin_size_4, q6_1=None,
-         q6_2=None, q6_3=None, bin_size_6=s.bin_size_6, max=None, min=None, sub=None)
+    #    plot(pp, s.domain, s.domain, s.mean_cln_4, s.mean_cln_6, s.spl_arr4, s.spl_arr6, s.xs4, s.xs6, ppd_arr=None, threshhold=None,
+    #         a4=None, b4=None, a6=None, b6=None, data=None, xs=None,
+    #         cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=s.bin_size_4, q6_1=None,
+    #         q6_2=None, q6_3=None, bin_size_6=s.bin_size_6, max=None, min=None, sub=None)
+    """Plots the skew sets for a pair"""
+    X4, Y4 = zip(*s.mean_cln_4)
+    X6, Y6 = zip(*s.mean_cln_6)
+
+    print("plotting entry " + str(s.domain))
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.plot(X4, Y4, 'bo', color="blue", alpha=0.4, label="IPv4")
+    ax1.plot(X6, Y6, 'bo', color="red", alpha=0.4, label="IPv6")
+
+    try:
+        ax1.plot(s.xs4, s.spl_arr4, linewidth=4, color="blue", alpha=0.4)
+        ax1.plot(s.xs6, s.spl_arr6, linewidth=4, color="red", alpha=0.4)
+    except Exception as e:
+        print("Not plotting spline for host {} due to exception {}".format(host, e))
+        pass
+
+    plt.legend(loc='lower right')
+    plt.title('Host: {} ({}/{})'.format(s.domain, s.ip4, s.ip6), fontsize=10)
+    plt.xlabel('measurement time (h)')
+    plt.ylabel('observed offset (msec)')
+    ticks = ax1.get_xticks() / 3600
+    ticks = [round(t, 1) for t in ticks]
+    ax1.set_xticklabels(ticks)
+    # saving all in PDF
+    pp.savefig(fig)
+    plt.close(fig)
 
 
-def plot(pp, index, host, arr4, arr6, ppd_arr=None, threshhold=None, a4=None, b4=None, a6=None, b6=None, data=None, spl_arr4=None, xs=None, spl_arr6=None,
+def plot(pp, index, host, arr4, arr6, spl_arr4=None, spl_arr6=None, xs4=None, xs6=None, ppd_arr=None, threshhold=None, a4=None, b4=None, a6=None, b6=None, data=None, xs=None,
          cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=None, q6_1=None, q6_2=None, q6_3=None, bin_size_6=None, max=None, min=None, sub=None):
     """Plots the skew sets for a pair"""
     X4, Y4 = zip(*arr4)
@@ -450,17 +562,22 @@ def plot(pp, index, host, arr4, arr6, ppd_arr=None, threshhold=None, a4=None, b4
     y4 = []
     y6 = []
 
-    print("plotting entry " + str(index))
+    print("plotting entry {}".format(host))
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(X4, Y4, 'bo', color="blue", alpha=0.4, label="IPv4")
     ax1.plot(X6, Y6, 'bo', color="red", alpha=0.4, label="IPv6")
 
-    if spl_arr4 and spl_arr6:
-        xs4, spl_y4 = zip(*spl_arr4)
-        xs6, spl_y6 = zip(*spl_arr6)
-        ax1.plot(xs4, spl_y4, linewidth=4, color="blue", alpha=0.4)
-        ax1.plot(xs6, spl_y6, linewidth=4, color="red", alpha=0.4)
+    #if spl_arr4 and spl_arr6:
+    try:
+        #print(spl_arr4, spl_arr6)
+        #xs4, spl_y4 = zip(*spl_arr4)
+        #xs6, spl_y6 = zip(*spl_arr6)
+        ax1.plot(xs4, spl_arr4, linewidth=4, color="blue", alpha=0.4)
+        ax1.plot(xs6, spl_arr6, linewidth=4, color="red", alpha=0.4)
+    except Exception as e:
+        print("Not plotting spline for host {} due to exception {}".format(host, e))
+        pass
 
     if data:  # reg lines
         y4 = [a4 * xi + b4 for xi in X4]
@@ -492,7 +609,7 @@ def plot(pp, index, host, arr4, arr6, ppd_arr=None, threshhold=None, a4=None, b4
         ax1.plot(x, y, color="purple", linewidth=4, alpha=1)
 
     plt.legend(loc='lower right')
-    plt.title('Host' + str(index) + ': ' + host)
+    plt.title('Host: ' + host)
     plt.xlabel('measurement time (h)')
     plt.ylabel('observed offset (msec)')
     ticks = ax1.get_xticks() / 3600
@@ -559,7 +676,7 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_di
 
     # ott range test
     elif rng4 <= neglig_skew_metric and rng6 <= neglig_skew_metric:  # both curves with small ranges
-        print("neg skew")
+        #print("neg skew")
         final_dec += "no skew(unknown)"
         neg_skew += 1
 
@@ -605,10 +722,11 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_di
     return final_dec
 
 
-def preamble2():
-    csv_path_abs = os.path.abspath(argv[2] + ".siblingresult.csv")
-    logfile = open(os.path.abspath(argv[2] + ".skewalgolog.txt"),"w")
-    plot_name = os.path.abspath(argv[2] + ".plots.pdf")
+def preamble2(mode):
+    csv_path_abs = os.path.abspath(argv[2] + "."+mode+".siblingresult.csv")
+    print("Writing decision to file: {}".format(argv[2] + "."+mode+".siblingresult.csv"))
+    logfile = open(os.path.abspath(argv[2] + "."+mode+".skewalgolog.txt"),"w")
+    plot_name = os.path.abspath(argv[2] + "." +mode+".plots.pdf")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
 
     with open(csv_path_abs, "wb"):  # purge previous file content
@@ -617,9 +735,9 @@ def preamble2():
     # open the file for writing, write headers and pass the writer obj to exportData fucntion for further writings.
     fd = open(csv_path_abs, "a")
     writer = csv.writer(fd)
-    writer.writerow(["domain", "ip4", "ip6", "alpha4", "beta4", "r_value4", "r_square4", "alpha6", "beta6", "r_value6", "r_square6",
+    writer.writerow(["domain", "ip4", "ip6", "alpha4", "hz4", "tcp_t_offset4", "hz4r2", "r_square4", "alpha6", "hz6", "hz6r2", "tcp_t_offset6", "r_square6",
                      "median of ppd", "mean of ppd", "spline_mean_diff", "ott4_range", "ott6_range", "ott_rng_diff", "ppd corridor",
-                     "85perc_mapped_diff", "decision"])
+                     "85perc_mapped_diff", "timestamps_diff",  "decision"])
 
     return writer, pp, fd, csv_path_abs, logfile
 
@@ -658,7 +776,11 @@ def spline(bin_size, offsets):
          offsets[0][0] + 9 * bin_size, offsets[0][0] + 10 * bin_size, offsets[0][0] + 11 * bin_size]
 
     # compute a spline polynomial of degree 3 over 5 equal pieces for the y points over steps of 1 sec on the x axis.
-    spl = LSQUnivariateSpline(x, y, t, w=None, bbox=[None, None], k=3)
+    try:
+        spl = LSQUnivariateSpline(x, y, t, w=None, bbox=[None, None], k=3)
+    except ValueError as e:
+        logging.error("ERROR: LSQUnivariateSpline ValueError failed with error {} and params x {} y {} t {} ".format(e,x,y,t))
+        raise
     spl_deriv = spl.derivative(1)  # derivative of degree one
     orig_curve = spl(xs)
     deriv_curve = spl_deriv(xs)
@@ -718,27 +840,60 @@ def mapCurve(cln_4, cln_6):
 if __name__ == ("__main__"):
     count=0
     rowcount=0
-    if len(sys.argv) != 2 + 1:
-        print("Usage: file.py sibling-cands tstamps")
+    if len(sys.argv) != 3 + 1:
+        print("Usage: file.py sibling-cands tstamps function")
+        print("function: plot-siblings plot-nonsiblings siblings nonsiblings")
         exit(1)
+
+    mode = sys.argv[3]
+    if mode == "plot-siblings":
+        print("plotting siblings...")
+        plotclassfrompickle(sys.argv[2],"siblings")
+        sys.exit(0)
+    elif mode == "plot-nonsiblings":
+        print("plotting nonsiblings...")
+        plotclassfrompickle(sys.argv[2],"nonsiblings")
+        sys.exit(0)
+    elif mode == "siblings":
+        print("calculating siblings")
+    elif mode == "nonsiblings" or mode == "non-siblings":
+        mode = "nonsiblings"
+        print("calculating non-siblings (from mismatching sibling pairs)")
+        #print("not yet implemented, exiting!")
+        #sys.exit(1)
+        # not sure if this is the way to go, or if non-silings should rather be
+        # based on permutated input files
+    else:
+        print("invalid command line parameter {}, exiting!".format(mode))
+        sys.exit(1)
+
     siblingcandscsv = sys.argv[1]
     tstampscsv = sys.argv[2]
     spl_mapped_diff_85 = []
-    writer, pp, fd, csv_path_abs, logfile = preamble2()
+    writer, pp, fd, csv_path_abs, logfile = preamble2(mode)
     d=dict() # dictionary of numpy arrays that hold timestamps per IP
     p=dict() # dictionary of IPs, holding # timestamps per IP
     offset=dict()
+
+    format='%(asctime)s - %(levelname)-7s - %(message)s'
+    logging.basicConfig(filename=sys.argv[2]+"."+mode+'-decisionlog.log', level=logging.DEBUG, format=format, filemode='w')
+
 
     # writing and reading pickle are both about 10x faster than reading csv
     # hence, simplify repeated execs by providing pickle file
     time_before = time.time()
     timestart=time.time()
+    fc=0 #failcount
+    scc=0 # sibling check count
+
+
     try:
         pklfile=open(tstampscsv+".cpickle",'rb')
         d,p,offset = pickle.load(pklfile)
         pklfile.close()
     except:
-        print("loading from pickle failed, loading from csv")
+        print("loading timestamps from pickle failed, loading timestamps from csv")
+        logging.debug("loading timestamps from pickle failed, loading timestamps from csv")
         with open(tstampscsv, "r") as csvfile:
             datareader = csv.reader(csvfile)
             count = 0
@@ -750,7 +905,7 @@ if __name__ == ("__main__"):
                     recvt = row[2]
                 except:
                     print("Error in line " + str(count) + "of " + str(tstampscsv) + ", skipping.")
-                    logfile.write("Error in line " + str(count) + "of " + str(tstampscsv) + ", skipping.\n")
+                    logging.error("Error in line " + str(count) + "of " + str(tstampscsv) + ", skipping.")
                     continue
                 if ip in d:
                     if p[ip] == 9999 :
@@ -758,47 +913,57 @@ if __name__ == ("__main__"):
                     if p[ip] > 100*1000-1: # more than 100k measurements can not be a target host
                         continue
                     if ip in offset:
+                        # recv_t is zero-based and scaled to be in seconds precision
                         d[ip][p[ip], :] = \
                             [np.float64(tcpt),np.float64(np.uint64(recvt)-np.uint64(offset[ip]))/np.float64(1000.0*1000.0)]
                         p[ip] = p[ip]+1
                     else:
-                        print("ip not in offset dict (should never happen): " + str(ip))
+                        print("ip not in offset dict (should never happen, exiting): " + str(ip))
+                        sys.exit(1)
                         d[ip] = {}
                         p[ip] = {}
                         continue
-                else:
-                    d[ip] = \
-                        np.zeros((10000,2),dtype=np.float64)
+                else: # ip is not in d, i.e. has not been seen before
+                    d[ip] = np.zeros((10000,2),dtype=np.float64)
                     p[ip] = 0
                     d[ip][p[ip], :] = [np.float64(tcpt),np.float64(0.0)]
                     p[ip] = p[ip]+1
                     offset[ip] = recvt
-        print("np structure built after: " + str(time.time()-time_before), "count: ", count, len(d), len(p))
+        logging.debug("timestamp np structure built after: {}, count: {} {} {}".format(time.time()-time_before, count, len(d), len(p)))
         # resize all to correct length
         for ip, value in p.items():
             d[ip].resize((p[ip],2))
 
-        print("resized after: " + str(time.time()-time_before), "count: ", count, len(d), len(p))
+        #logging.debug("timestamps resized after: " + str(time.time()-time_before), "count: ", str(count), str(len(d)), str(len(p)))
         pklfile=open(tstampscsv+".cpickle",'wb')
         # py3 automatically uses cpickle
         pickle.dump([d,p,offset],pklfile)
-        print("cpickle dumped after: " + str(time.time()-time_before), "count: ", count, len(d), len(p))
+        #logging.debug("timestamp cpickle dumped after: " + str(time.time()-time_before), "count: ", str(count), str(len(d)), str(len(p)))
         pklfile.close()
-    print("data loading done after: " + str(time.time()-time_before), len(d), len(p))
+    print("ts data loading done after {} seconds, hosts: {} {} ".format(time.time()-time_before, len(d), len(p)))
+    logging.debug("ts data loading done after: {} {} {}".format(time.time()-time_before, len(d), len(p)))
 
     # see https://pymotw.com/2/multiprocessing/communication.html
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     num_consumers = multiprocessing.cpu_count()
-    print('Creating %d consumers' % num_consumers)
+    #num_consumers = 1
+    logging.debug('Creating %d consumers' % num_consumers)
     consumers = [ Consumer(tasks, results) for i in range(num_consumers) ]
     for w in consumers:
         w.start()
 
     # write calculation results to pickle
-    pklfileres=open(tstampscsv+".resultspickle",'wb')
+    pklfileres=open(tstampscsv+"."+mode+".resultspickle",'wb')
 
-    with open(sys.argv[1]) as scfile:
+    lfc = 0 # line fail count
+    cc = 0 # cache count
+    fcnov4 = 0 # no v4 fails count
+    fcnov6 = 0 # no v4 fails count
+    fctld = 0 # fail count too little data
+    fctmd = 0
+    siblingcands = dict()
+    with open(siblingcandscsv) as scfile: # iterate through sibling cands
         csvreader = csv.reader(scfile)
         for row in csvreader:
             time_before = time.time()
@@ -809,82 +974,153 @@ if __name__ == ("__main__"):
                 ip6 = row[2]
             except:
                 print("Reading line failed: " +str(rowcount) + "\n")
-            if (ip4,ip6) in decisioncache:
-                print("decision from cache ,", domain, ip4, ip6, decisioncache[(ip4,ip6)])
-                logfile.write("decision from cache, "+ str(domain) + str(ip4) + str(ip6) + str (decisioncache[(ip4,ip6)])+"\n")
+                logging.warning("Reading line failed: " +str(rowcount) + "\n")
+                fc += 1
+                lfc += 1
+            if (ip4,ip6) in decisioncache: # this decision cache just avoids to re-run calculations in case of duplicate inputs
+                #print("decision from cache ,", domain, ip4, ip6, decisioncache[(ip4,ip6)])
+                logging.debug("(from cache) decision: "+ str(domain) + " "+ str(ip4) +" "+ str(ip6) +" "+ str (decisioncache[(ip4,ip6)]))
+                cc += 1
                 continue
             if ip4 not in d:
-                logfile.write("no ipv4 value ," + str(domain) +" - "+ str(ip4) + " - " +str(ip6) + "\n")
+                logging.warning("no ipv4 values in TS: " + str(domain) +" - "+ str(ip4) + " - " +str(ip6))
+                logging.warning("decision: {} {} {} no-ipv4".format(domain, ip4, ip6))
+                fc += 1
+                fcnov4 += 1
                 continue;
             d[ip4].resize((p[ip4],2))
             np4=d[ip4]
+            offset4 = offset[ip4]
             if ip6 not in d:
-                logfile.write("no ipv6 value ," +str(domain) + ","+ str(ip4)+","+str(ip6)+"\n")
+                logging.warning("no ipv6 values in TS: " +str(domain) + ","+ str(ip4)+","+str(ip6))
+                logging.warning("decision: {} {} {} no-ipv6".format(domain, ip4, ip6))
+                fc += 1
+                fcnov6 += 1
                 continue;
             d[ip6].resize((p[ip6],2))
             np6=d[ip6]
+            offset6 = offset[ip6]
             time_after = time.time()
-            logfile.write("sizes,"+str(domain)+","+str(ip4)+","+str(np4.size)+","+str(ip6)+","+str(np6.size)+"\n")
-            logfile.write("calling calcsib on ,"+str(domain)+","+str(ip4)+ ","+str(ip6)+ "\n")
-            print("+",end="")
-            tasks.put(rl_calcsib(np4,np6,domain,ip4,ip6))
+            logging.debug("array sizes for "+str(domain)+" : "+str(ip4)+","+str(np4.size)+","+str(ip6)+","+str(np6.size))
+            if np4.size < 100 or np6.size < 100:
+                logging.debug("arry sizes too small, skipping!")
+                logging.warning("decision: {} {} {} too-little-data".format(domain, ip4, ip6))
+                fctld += 1 # fail count too little data
+                fc += 1
+                continue
+            if np4.size > 100*1000 or np6.size > 100*1000:
+                logging.debug("arry sizes too big, skipping!")
+                logging.warning("decision: {} {} {} too-much-data".format(domain, ip4, ip6))
+                fctmd += 1 # fail count too little data
+                fc += 1
+                continue
+
+            if(mode=="siblings"):
+                logging.debug("calling calcsib on ,"+str(domain)+","+str(ip4)+ ","+str(ip6))
+                print("+",end="")
+                tasks.put(rl_calcsib(np4,offset4,np6,offset6,domain,ip4,ip6))
+                scc += 1
+            elif(mode=="nonsiblings"):
+                # DONT USE
+                logging.debug("nonsiblings: putting into siblingcands dict: {} {}".format(ip4, ip6))
+                siblingcands[(ip4,ip6)] = [np4, np6, domain]
+                continue
 
 
+            # even while reading input, take results off the output queue to avoid bloating it
             while(tasks.qsize() > 100):
                 if(results.empty()):
                     continue
                 while(not results.empty()):
                     s = results.get()
                     if(not s):
-                        print("no s!")
+                        #print("no s!")
+                        logging.warning("no s!")
                     else:
                         decisioncache[(s.ip4,s.ip6)] = s.dec
                         objectscache[(s.ip4,s.ip6)] = s
-                        print("decision: ", s.domain , s.ip4 ,  s.ip6, s.dec)
-                        logfile.write("decision: , "+ str(s.domain) + str(s.ip4) + str(s.ip6) + str(s.dec)+"\n")
-                        writer.writerow([s.domain, s.ip4, s.ip6, s.a4, None, None, s.r4_sqr, s.a6, None, None, s.r6_sqr,
+                        #print("decision: ", s.domain , s.ip4 ,  s.ip6, s.dec)
+                        logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
+                        writer.writerow([s.domain, s.ip4, s.ip6,
+                                         s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
+                                         s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
                                         None, None, None, s.ott4_rng, s.ott6_rng,
-                                        s.ott_rng_diff, None, s.perc_85_val, s.dec])
+                                        s.ott_rng_diff, None, s.perc_85_val, s.timestamps_diff, s.dec])
 
             count=count+1
             continue
-            # for testing purposes
-            print("elapsed time:", time_after - time_before)
-            print("pdd range eliminated", ppd_rng_elm)
-            print("ott range eliminated", ott_rng_elm)
-            print("ott range unknown", ott_rng_unk)
-            print("mixed factor eliminator", mixd_elm)
-            print("mixed factor unknown", mixd_unk)
-            print("valid slope count", val_slp)
-            print("false positive: ", false_pos)
-            print("true positive: ", true_pos)
-            print("false negative: ", false_neg)
-            print("true negative: ", true_neg + tcp_sig)
-            print("negligibel skew: ", neg_skew)
-            print("tcp signature withdrawal count:", tcp_sig)
-            print("linear offset trend", const_skew)
+
+
+    if mode == "nonsiblings": # form non-sibling pairs from siblings dicts
+        nonsiblings = dict()
+        for k1, v1 in siblingcands.items():
+            for k2, v2 in siblingcands.items():
+                if k1 != k2:
+                    #print("DEBUG: v1 {}, v2 {}, \n v1[0] {}, v2[0]: {}".format(v1 ,v2, v1[0], v2[0]))
+                    nonsiblings[(k1[0], k2[1])] = [v1[0], v2[1], "v4-"+v1[2]+"--v6-"+v2[2]]
+                    nonsiblings[(k2[0], k1[1])] = [v2[0], v1[1], "v4-"+v2[2]+"--v6-"+v1[2]]
+        # now we should have constructed a large non-sibling dataset
+        print("nonsiblings length: {}".format(len(nonsiblings)))
+        for k,v in nonsiblings.items():
+            # DONT USE
+            tasks.put(rl_calcsib(v[0],v[1],v[2],k[0],k[1]))
+            #tasks.put(rl_calcsib(np4,np6,domain,ip4,ip6))
+            while(tasks.qsize() > 100):
+                if(results.empty()):
+                    continue
+                while(not results.empty()):
+                    s = results.get()
+                    if(not s):
+                        #print("no s!")
+                        logging.warning("no s!")
+                    else:
+                        decisioncache[(s.ip4,s.ip6)] = s.dec
+                        objectscache[(s.ip4,s.ip6)] = s
+                        #print("decision: ", s.domain , s.ip4 ,  s.ip6, s.dec)
+                        logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
+                        writer.writerow([s.domain, s.ip4, s.ip6,
+                                         s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
+                                         s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
+                                        None, None, None, s.ott4_rng, s.ott6_rng,
+                                        s.ott_rng_diff, None, s.perc_85_val, s.timestamps_diff, s.dec])
+
+
+    print("\nRead {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, sys.argv[1], fc, cc, scc))
+    logging.debug("Read {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, sys.argv[1], fc, cc, scc))
+    logging.debug("fails substructured into line format: {} nov4ts: {}  nov6ts: {} too-little-data: {} tmd: {}".format(lfc, fcnov4, fcnov6, fctld, fctmd))
 
     # tasks.join() can sometimes block to inifinity - work around
     while(tasks.qsize()>0):
         print("tasks queue size:" + str(tasks.qsize()))
+        logging.debug("tasks queue size:" + str(tasks.qsize()))
         time.sleep(1)
     print("tasks queue size:" + str(tasks.qsize()))
+    logging.debug("tasks queue size:" + str(tasks.qsize()))
     time.sleep(1)
     print("results queue size: " + str(results.qsize()))
+    logging.debug("results queue size: " + str(results.qsize()))
     while(results.qsize()>0):
         s = results.get()
         if(s):
-            writer.writerow([s.domain, s.ip4, s.ip6, s.a4, None, None, s.r4_sqr, s.a6, None, None, s.r6_sqr,
+            logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
+            writer.writerow([s.domain, s.ip4, s.ip6,
+                             s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
+                             s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
                             None, None, None, s.ott4_rng, s.ott6_rng,
-                            s.ott_rng_diff, None, s.perc_85_val, s.dec])
+                            s.ott_rng_diff, None, s.perc_85_val, s.timestamps_diff, s.dec])
+
             objectscache[(s.ip4,s.ip6)] = s
-        else:
-            print("s empty!")
-    print("results queue size: " + str(results.qsize()))
+        #else:
+            #print("result pipe empty, exiting ...")
+            #logging.debug("result pipe empty, exiting ...")
+        #    continue
+    print("results queue size (check, must be 0): " + str(results.qsize()))
+    logging.debug("results queue size: " + str(results.qsize()))
     pickle.dump(objectscache,pklfileres)
     pklfileres.close()
     fd.close()
     pp.close()
+    print("Done, check log under {}".format(sys.argv[2]+"."+mode+'-decisionlog.log'))
 
     for w in consumers:
         w.terminate()

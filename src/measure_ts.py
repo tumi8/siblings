@@ -211,7 +211,11 @@ def main(argv):
 		tcpdumpprocess = start_capture() # start tcpdump capture
 
 	format='%(asctime)s - %(levelname)-7s - %(message)s'
-	logging.basicConfig(filename=input_csv+'.log', level=logging.DEBUG, format=format, filemode='w')
+	now=datetime.datetime.now()
+	date=datetime.date.today()
+	logfilename="sibling-measurement-"+str(date.year)+str(date.month).zfill(2)+ \
+		str(date.day).zfill(2)+"-"+str(now.hour).zfill(2)+str(now.minute).zfill(2)+".log"
+	logging.basicConfig(filename=input_csv+"-"+logfilename, level=logging.DEBUG, format=format, filemode='w')
 
 	starttime=time.time()
 
