@@ -5,18 +5,16 @@
 """
 
 from __future__ import division
-#import warnings
-#warnings.filterwarnings("ignore",category=DeprecationWarning)
 from scipy import stats
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # this is not pep-conform but required here ^^
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import csv
 import os.path
 import time
-from sys import argv
+#from sys import argv
 import sys
 from scipy.interpolate import LSQUnivariateSpline
 import pickle
@@ -26,7 +24,7 @@ import time
 import traceback
 from collections import Counter
 import logging
-
+import argparse
 
 ppd_rng_elm = 0
 ott_rng_elm = 0
@@ -34,7 +32,7 @@ ott_rng_unk = 0
 mixd_elm = 0
 mixd_unk = 0
 val_slp = 0
-# false postive and false negative count for Siblings and Non-siblings respectively
+# false postive and false negative count
 false_pos = 0
 false_neg = 0
 true_pos = 0
@@ -42,9 +40,8 @@ true_neg = 0
 neg_skew = 0
 tcp_sig = 0
 const_skew = 0
-ipcache=dict()
-decisioncache=dict()
-objectscache=dict()
+ipcache = dict()
+objectscache = dict()
 
 def calCDF(diff_arr):
     """"cumulative distribution function"""
@@ -57,12 +54,13 @@ def calCDF(diff_arr):
     sorted_lst = sorted(packed)
     suml = 0
     acc_sum = []
-    for a,b in sorted_lst:
+    for a, b in sorted_lst:
         suml += b
         acc_sum.append(suml)
-    x = [i for i,j in sorted_lst]
+    x = [i for i, j in sorted_lst]
     ret_list = [(i, j) for i, j in list(zip(x, acc_sum))]
     return ret_list
+
 
 class Consumer(multiprocessing.Process):
     # https://pymotw.com/2/multiprocessing/communication.html
@@ -77,41 +75,50 @@ class Consumer(multiprocessing.Process):
             next_task = self.task_queue.get()
             if next_task is None:
                 print('%s: Exiting' % proc_name)
-                break;
+                break
             else:
-                a=next_task()
+                a = next_task()
                 self.result_queue.put(a)
                 self.task_queue.task_done()
         return
 
+
 class rl_calcsib(object):
-    def __init__ (self,np4,offset4, np6, offset6, domain,ip4,ip6):
+    def __init__(self, np4, offset4, np6, offset6, opts4, opts6, domain, ip4, ip6):
         self.np4 = np4
         self.offset4 = offset4
         self.np6 = np6
         self.offset6 = offset6
+        self.opts4 = opts4
+        self.opts6 = opts6
         self.domain = domain
         self.ip4 = ip4
         self.ip6 = ip6
 
     def __call__(self):
         try:
-            s = calcsib(self.np4 ,self.offset4 , self.np6, self.offset6, self.domain ,self.ip4 ,self.ip6 )
+            s = calcsib(self.np4, self.offset4, self.np6, self.offset6,
+                        self.opts4, self.opts6,
+                        self.domain, self.ip4, self.ip6)
         except Exception as e:
-            #print("error in calcsib for {} {} {}, error: {}, np4: {}, np6: {} ".format(self.domain, self.ip4, self.ip6, e, self.np4, self.np6))
             logging.error("error in calcsib for {} {} {}, error: {}, np4: {}, np6: {} ".format(self.domain, self.ip4, self.ip6, e, self.np4, self.np6))
             raise
-            #traceback.print_exc()
-        #    raise
             return None
         else:
             return s
 
-def calcsib(np4,offset4in, np6, offset6in, domain,ip4,ip6):
+
+def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     s = skews()  # instantiation of skew class
-    s.domain=domain
-    s.ip4=ip4
-    s.ip6=ip6
+    s.domain = domain
+    s.ip4 = ip4
+    s.ip6 = ip6
+    s.opts4 = opts4
+    s.opts6 = opts6
+    if opts4 == opts6:
+        s.optsdiff = 1
+    else:
+        s.optsdiff = 0
     ignore, den_arr4, errorindicator4 = s.processTrace2(np4, 4)
     ignore, den_arr6, errorindicator6 = s.processTrace2(np6, 6)
     if errorindicator4 or errorindicator6:
@@ -216,17 +223,18 @@ def calcsib(np4,offset4in, np6, offset6in, domain,ip4,ip6):
         s.perc_85_val = perc_85_arr[middle_inx]
     except Exception as e:
         print("calcsib failed at perc_val: " + str(e))
-        logging.warning("calcsib failed at perc_val: " + str(e)) # needs more context
+        logging.warning("calcsib failed at perc_val: " + str(e))
         s.dec = "error_percval!"
-        return s;
+        return s
 
+    s.dec = decision(s.r4_sqr, s.r6_sqr, None, s.a4, s.a6, s.ppd_range,
+                     s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.perc_85_val,
+                     None)
+    return s
 
-    s.dec = decision(s.r4_sqr, s.r6_sqr, None, s.a4, s.a6, s.ppd_range, s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.perc_85_val, None)
-
-    return s;
 
 class skews():
-    domain,ip4,ip6 = None , None , None
+    domain, ip4, ip6 = None, None, None
     r4_sqr = None
     r6_sqr = None
     a4 = None
@@ -235,13 +243,14 @@ class skews():
     ott4_rng = None
     ott6_rng = None
     ott_rng_diff = None
-    perc_85_val=None
+    perc_85_val = None
     bin_size_4, bin_size_6 = None, None
     spl_arr4, spl_arr6, xs4, xs6 = None, None, None, None # required to plot skew lines
     hz4, hz6, tcp_t_offset4, tcp_t_offset6, hz4r2, hz6r2 = None, None, None, None, None, None # hz for clock detection (Kohno et al.)
     timestamps_diff = None # difference between raw v4 and raw v6 tcp ts
     dec = None
     ott_rng_diff_rel = None
+    opts4, opts6, optsdiff = None, None, None
 
     def calHertz(self, rcv_t, tcp_t, ver):
         """ From rec_t and tcp_t, calculate Hertz of remote clock
@@ -501,31 +510,31 @@ class skews():
 
         return ret_arr
 
-
+"""
 def timeStamp(writer):
     writer.writerow(["File creation time: " + time.ctime()])
+"""
 
-def plotclassfrompickle(tsfile, mode):
-    plot_name = os.path.abspath(tsfile +"."+mode+".plots.pdf")
+
+def plotclassfrompickle(tsfile, mode=None):
+    """ plot graphics from pickled cache """
+    plot_name = os.path.abspath(tsfile + ".plots.pdf")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
-    pklfile=open(tsfile+"."+mode+".resultspickle",'rb')
+    pklfile = open(tsfile+".resultspickle", 'rb')
     d = pickle.load(pklfile)
     pklfile.close()
-    count=len(d.items())
-    ctr=0
-    for _,s in d.items():
+    count = len(d.items())
+    ctr = 0
+    for _, s in d.items():
         print("{} / {} plotting entry {}".format(ctr, count, s.domain))
-        plotclass(pp,s)
+        plotclass(pp, s)
         ctr += 1
     pp.close()
-    print("Plotted to file {}".format(tsfile +"."+mode+".plots.pdf"))
+    print("Plotted to file {}".format(tsfile + ".plots.pdf"))
 
-def plotclass(pp,s):
-    #    plot(pp, s.domain, s.domain, s.mean_cln_4, s.mean_cln_6, s.spl_arr4, s.spl_arr6, s.xs4, s.xs6, ppd_arr=None, threshhold=None,
-    #         a4=None, b4=None, a6=None, b6=None, data=None, xs=None,
-    #         cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=s.bin_size_4, q6_1=None,
-    #         q6_2=None, q6_3=None, bin_size_6=s.bin_size_6, max=None, min=None, sub=None)
-    """Plots the skew sets for a pair"""
+
+def plotclass(pp, s):
+    """ Plots the skew sets for a pair """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
@@ -542,11 +551,12 @@ def plotclass(pp,s):
         ax1.plot(s.xs4, s.spl_arr4, linewidth=4, color="blue", alpha=0.4)
         ax1.plot(s.xs6, s.spl_arr6, linewidth=4, color="red", alpha=0.4)
     except Exception as e:
-        print("Not plotting spline for host {} due to exception {}".format(s.domain, e))
+        print("Not plotting host {} due to exception {}".format(s.domain, e))
         pass
 
     plt.legend(loc='lower right')
-    plt.title('Host: {} ({} / {})\n Decision: {}'.format(s.domain, s.ip4, s.ip6, s.dec), fontsize=10)
+    plt.title('Host: {} ({} / {})\n Decision: {}'.format(
+        s.domain, s.ip4, s.ip6, s.dec), fontsize=10)
     plt.xlabel('measurement time (h)')
     plt.ylabel('observed offset (msec)')
     ticks = ax1.get_xticks() / 3600
@@ -556,10 +566,9 @@ def plotclass(pp,s):
     pp.savefig(fig)
     plt.close(fig)
 
-
+""" LIKELY NOT USED!!
 def plot(pp, index, host, arr4, arr6, spl_arr4=None, spl_arr6=None, xs4=None, xs6=None, ppd_arr=None, threshhold=None, a4=None, b4=None, a6=None, b6=None, data=None, xs=None,
          cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=None, q6_1=None, q6_2=None, q6_3=None, bin_size_6=None, max=None, min=None, sub=None):
-    """Plots the skew sets for a pair"""
     X4, Y4 = zip(*arr4)
     X6, Y6 = zip(*arr6)
     y4 = []
@@ -621,9 +630,12 @@ def plot(pp, index, host, arr4, arr6, spl_arr4=None, spl_arr6=None, xs4=None, xs
     # saving all in PDF
     pp.savefig(fig)
     plt.close(fig)
+"""
 
-def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6, rng_diff, spl_diff_85, dataset=None):
-    """ Theta is not used """
+
+def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
+             rng_diff, spl_diff_85, dataset=None):
+    """ decison algorithm """
     passed = False
     validslope_metric = 0.81  # linear slopes obtained by r values and plots (r value of 0.9 or greater)
     rsqr_diff_metric = 0.2
@@ -729,29 +741,29 @@ def writefromclass(s, writer):
                     s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
                     s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
                     s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.ott_rng_diff_rel,
-                    abs(s.hz4-s.hz6), s.perc_85_val, s.timestamps_diff, s.dec])
+                    abs(s.hz4-s.hz6), s.perc_85_val, s.timestamps_diff,
+                    s.opts4, s.opts6, s.optsdiff, s.dec])
 
 
-def preamble2(mode):
-    tsp, tsf = os.path.split(sys.argv[2])
-    csv_path_abs = os.path.abspath(sys.argv[1]+tsf+ "."+mode+".siblingresult.csv")
-    #logfile = open(os.path.abspath(argv[1]+argv[2] + "."+mode+".skewalgolog.txt"),"w")
-    plot_name = os.path.abspath(sys.argv[1]+tsf+ "." +mode+".plots.pdf")
-    pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
+def startwriter(args):
+    csv_path_abs = os.path.abspath(args.scfile+args.tsf + ".siblingresult.csv")
 
     with open(csv_path_abs, "wb"):  # purge previous file content
         pass
 
-    # open the file for writing, write headers and pass the writer obj to exportData fucntion for further writings.
+    # open the file for writing, write headers and pass the writer obj
+    # to exportData fucntion for further writing.
     fd = open(csv_path_abs, "a")
     writer = csv.writer(fd)
-    writer.writerow(["domain", "ip4", "ip6",
-                     "alpha4", "hz4", "tcp_t_offset4", "hz4r2", "r_square4",
-                     "alpha6", "hz6", "tcp_t_offset6", "hz6r2", "r_square6",
-                     "ott4_range", "ott6_range", "ott_rng_diff", "ott_rng_diff_rel",
-                     "hzdiff", "85perc_mapped_diff", "timestamps_diff",  "decision"])
+    writer.writerow(
+        ["domain", "ip4", "ip6",
+         "alpha4", "hz4", "tcp_t_offset4", "hz4r2", "r_square4",
+         "alpha6", "hz6", "tcp_t_offset6", "hz6r2", "r_square6",
+         "ott4_range", "ott6_range", "ott_rng_diff", "ott_rng_diff_rel",
+         "hzdiff", "85perc_mapped_diff", "timestamps_diff",
+         "tcpopts4", "tcpopts6", "tcpoptsdiff", "decision"])
 
-    return writer, pp, fd, csv_path_abs, None
+    return writer, None, fd, csv_path_abs, None
 
 
 def binEqual(offsets):
@@ -848,74 +860,44 @@ def mapCurve(cln_4, cln_6):
         curve = "4"
     return zip(x_mapped, y_mapped), abs(mean_diff), curve
 
-
-if __name__ == ("__main__"):
-    count=0 # are these used?
-    rowcount=0 # are these used?
-
-    import argparse
-
+def argprs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--scfile', action="store", dest="scfile",
                         help='the sibling candidate file, typically the '
                         'hitlist used for scanning')
     parser.add_argument('-t', '--tsfile',  action="store", dest="tsfile",
                         help='the timestamps csv file')
-    parser.add_argument('-o', '--tsoptfile',  action="store", dest="optsfile",
+    parser.add_argument('-o', '--tcpoptsfile',  action="store", dest="optsfile",
                         help='the file with TCP options')
     parser.add_argument('--plot', dest='mode', action='store_const',
                         const="plot", default="sibling",
                         help='optional: create PDF with plots')
 
     args = parser.parse_args()
-    print("args: scfile = {} \n tsfile = {} \n optsfile = {} \n mode  = {}".format(args.scfile, args.tsfile, args.optsfile, args.mode))
-    sys.exit(1)
-
-    if len(sys.argv) != 3 + 1:
-        print("Usage: file.py sibling-cands tstamps function")
-        print("function: plot-siblings plot-nonsiblings siblings nonsiblings")
-        exit(1)
-
-    mode = sys.argv[3]
-    tsp, tsf = os.path.split(sys.argv[2])
-    if mode == "plot-siblings":
-        print("plotting siblings...")
-        plotclassfrompickle(sys.argv[1]+tsf,"siblings")
-        sys.exit(0)
-    elif mode == "siblings":
-        print("calculating siblings")
-    else:
-        print("invalid command line parameter {}, exiting!".format(mode))
-        sys.exit(1)
-
-    siblingcandscsv = sys.argv[1]
-    tstampscsv = sys.argv[2]
-    spl_mapped_diff_85 = []
-    writer, pp, fd, csv_path_abs, logfile = preamble2(mode)
-    d=dict() # dictionary of numpy arrays that hold timestamps per IP
-    p=dict() # dictionary of IPs, holding # timestamps per IP
-    offset=dict()
-
-    format='%(asctime)s - %(levelname)-7s - %(message)s'
-    logging.basicConfig(filename=sys.argv[1]+tsf+"."+mode+'-decisionlog.log', level=logging.DEBUG, format=format, filemode='w')
+    args.tsp, args.tsf = os.path.split(args.tsfile)
+    print("args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
+        args.scfile, args.tsfile, args.optsfile, args.mode))
+    return args
 
 
+def loadts(args):
+    """ loads timestamp values from csv file """
     # writing and reading pickle are both about 10x faster than reading csv
     # hence, simplify repeated execs by providing pickle file
     time_before = time.time()
     timestart=time.time()
-    fc=0 #failcount
-    scc=0 # sibling check count
-
+    d = dict()  # dictionary of numpy arrays that hold timestamps per IP
+    p = dict()  # dictionary of IPs, holding # timestamps per IP
+    offset = dict()  # dict to hold tsval offset per IP
 
     try:
-        pklfile=open(tstampscsv+".pickle",'rb')
-        d,p,offset = pickle.load(pklfile)
+        pklfile = open(args.tsfile + ".pickle", 'rb')
+        d, p, offset = pickle.load(pklfile)
         pklfile.close()
     except:
-        print("loading timestamps from pickle failed, loading timestamps from csv")
-        logging.debug("loading timestamps from pickle failed, loading timestamps from csv")
-        with open(tstampscsv, "r") as csvfile:
+        print("TS pickle loading failed, loading from csv")
+        logging.debug("TS pickle loading failed, loading from csv")
+        with open(args.tsfile, "r") as csvfile:
             datareader = csv.reader(csvfile)
             count = 0
             for row in datareader:
@@ -925,197 +907,205 @@ if __name__ == ("__main__"):
                     tcpt = row[1]
                     recvt = row[2]
                 except:
-                    print("Error in line " + str(count) + "of " + str(tstampscsv) + ", skipping.")
-                    logging.error("Error in line " + str(count) + "of " + str(tstampscsv) + ", skipping.")
+                    print("Error in line " + str(count) + "of " + str(args.tsfile) + ", skipping.")
+                    logging.error("Error in line " + str(count) + "of " + str(args.tsfile) + ", skipping.")
                     continue
                 if ip in d:
-                    if p[ip] == 9999 :
-                        d[ip].resize(100*1000,2)
+                    if p[ip] == 9999:
+                        d[ip].resize(100*1000, 2)
                     if p[ip] > 100*1000-1: # more than 100k measurements can not be a target host
                         continue
                     if ip in offset:
                         # recv_t is zero-based and scaled to be in seconds precision
                         d[ip][p[ip], :] = \
-                            [np.float64(tcpt),np.float64(np.uint64(recvt)-np.uint64(offset[ip]))/np.float64(1000.0*1000.0)]
-                        p[ip] = p[ip]+1
+                            [np.float64(tcpt),
+                             np.float64(np.uint64(recvt)-np.uint64(offset[ip]))/np.float64(1000.0*1000.0)]
+                        p[ip] = p[ip] + 1
                     else:
                         print("ip not in offset dict (should never happen, exiting): " + str(ip))
                         sys.exit(1)
-                        d[ip] = {}
-                        p[ip] = {}
-                        continue
-                else: # ip is not in d, i.e. has not been seen before
-                    d[ip] = np.zeros((10000,2),dtype=np.float64)
+                else:  # ip is not in d, i.e. has not been seen before
+                    d[ip] = np.zeros((10000, 2), dtype=np.float64)
                     p[ip] = 0
-                    d[ip][p[ip], :] = [np.float64(tcpt),np.float64(0.0)]
+                    d[ip][p[ip], :] = [np.float64(tcpt), np.float64(0.0)]
                     p[ip] = p[ip]+1
                     offset[ip] = recvt
         logging.debug("timestamp np structure built after: {}, count: {} {} {}".format(time.time()-time_before, count, len(d), len(p)))
-        # resize all to correct length
+        # resize all to correct length (removes trailing zeroes)
         for ip, value in p.items():
-            d[ip].resize((p[ip],2))
+            d[ip].resize((p[ip], 2))
 
-        #logging.debug("timestamps resized after: " + str(time.time()-time_before), "count: ", str(count), str(len(d)), str(len(p)))
-        pklfile=open(tstampscsv+".pickle",'wb')
-        # py3 automatically uses cpickle
-        pickle.dump([d,p,offset],pklfile)
-        #logging.debug("timestamp cpickle dumped after: " + str(time.time()-time_before), "count: ", str(count), str(len(d)), str(len(p)))
+        pklfile = open(args.tsfile+".pickle",'wb')
+        pickle.dump([d, p, offset], pklfile)
         pklfile.close()
     print("ts data loading done after {} seconds, hosts: {} {} ".format(time.time()-time_before, len(d), len(p)))
     logging.debug("ts data loading done after: {} {} {}".format(time.time()-time_before, len(d), len(p)))
+    return d, p, offset
 
+
+def startmp():
     # see https://pymotw.com/2/multiprocessing/communication.html
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     num_consumers = multiprocessing.cpu_count()
-    #num_consumers = 1
     logging.debug('Creating %d consumers' % num_consumers)
-    consumers = [ Consumer(tasks, results) for i in range(num_consumers) ]
+    consumers = [Consumer(tasks, results) for i in range(num_consumers)]
     for w in consumers:
         w.start()
+    return tasks, results, consumers
 
-    # write calculation results to pickle
-    tsp, tsf = os.path.split(sys.argv[2])
-    pklfileres=open(sys.argv[1]+tsf+"."+mode+".resultspickle",'wb')
 
+def loadsc(args, d, p, offset, tasks, results, opts, writer):
+    """ iterates through the sibling candidates file
+        timestamps are stored in d, p and offset
+        tasks and results are MP queues
+        opts is a dict with ip-> tcp options FP mapping
+        writer is a writer object to export results
+    """
     lfc = 0 # line fail count
     cc = 0 # cache count
     fcnov4 = 0 # no v4 fails count
     fcnov6 = 0 # no v4 fails count
     fctld = 0 # fail count too little data
     fctmd = 0
+    scc = 0
+    count = 0
+    fc = 0
     siblingcands = dict()
-    with open(siblingcandscsv) as scfile: # iterate through sibling cands
+    decisioncache = dict()
+
+    with open(args.scfile) as scfile:  # iterate through sibling cands
         csvreader = csv.reader(scfile)
+        rowcount = 0
         for row in csvreader:
             time_before = time.time()
-            rowcount=rowcount+1
+            rowcount += 1
             try:
                 domain = row[0]
                 ip4 = row[1]
                 ip6 = row[2]
             except:
-                print("Reading line failed: " +str(rowcount) + "\n")
-                logging.warning("Reading line failed: " +str(rowcount) + "\n")
+                print("Reading line failed: " + str(rowcount) + "\n")
+                logging.warning("Reading line failed: " + str(rowcount) + "\n")
                 fc += 1
                 lfc += 1
-            if (ip4,ip6) in decisioncache: # this decision cache just avoids to re-run calculations in case of duplicate inputs
-                #print("decision from cache ,", domain, ip4, ip6, decisioncache[(ip4,ip6)])
+            if (ip4, ip6) in decisioncache:
+                # this decision cache avoids re-running calculations in case of duplicate inputs
                 logging.debug("(from cache) decision: "+ str(domain) + " "+ str(ip4) +" "+ str(ip6) +" "+ str (decisioncache[(ip4,ip6)]))
                 cc += 1
                 continue
             if ip4 not in d:
                 logging.warning("no ipv4 values in TS: " + str(domain) +" - "+ str(ip4) + " - " +str(ip6))
-                logging.warning("decision: {} {} {} no-ipv4".format(domain, ip4, ip6))
+                logging.warning("decision: {} {} {} no-ipv4".format(
+                    domain, ip4, ip6))
                 fc += 1
                 fcnov4 += 1
-                continue;
-            d[ip4].resize((p[ip4],2))
-            np4=d[ip4]
+                continue
+            if ip4 not in opts or ip6 not in opts:
+                logging.warning("no tcp opts found for IPs {} / {}".format(ip4, ip6))
+                opts[ip4] = ""
+                opts[ip6] = ""
+            d[ip4].resize((p[ip4], 2))
+            np4 = d[ip4]
             offset4 = offset[ip4]
             if ip6 not in d:
-                logging.warning("no ipv6 values in TS: " +str(domain) + ","+ str(ip4)+","+str(ip6))
+                logging.warning("no ipv6 values in TS: " + str(domain) + "," + str(ip4) + "," + str(ip6))
                 logging.warning("decision: {} {} {} no-ipv6".format(domain, ip4, ip6))
                 fc += 1
                 fcnov6 += 1
-                continue;
-            d[ip6].resize((p[ip6],2))
-            np6=d[ip6]
+                continue
+            d[ip6].resize((p[ip6], 2))
+            np6 = d[ip6]
             offset6 = offset[ip6]
             time_after = time.time()
             logging.debug("array sizes for "+str(domain)+" : "+str(ip4)+","+str(np4.size)+","+str(ip6)+","+str(np6.size))
             if np4.size < 100 or np6.size < 100:
                 logging.debug("arry sizes too small, skipping!")
                 logging.warning("decision: {} {} {} too-little-data".format(domain, ip4, ip6))
-                fctld += 1 # fail count too little data
-                fc += 1
+                fctld += 1  # fail count too little data
+                fc += 1  # generic fail count
                 continue
             if np4.size > 100*1000 or np6.size > 100*1000:
                 logging.debug("arry sizes too big, skipping!")
-                logging.warning("decision: {} {} {} too-much-data".format(domain, ip4, ip6))
-                fctmd += 1 # fail count too little data
+                logging.warning("decision: {} {} {} too-much-data".format(
+                    domain, ip4, ip6))
+                fctmd += 1  # fail count too little data
                 fc += 1
                 continue
 
-            if(mode=="siblings"):
-                logging.debug("calling calcsib on ,"+str(domain)+","+str(ip4)+ ","+str(ip6))
-                print("+",end="")
-                tasks.put(rl_calcsib(np4,offset4,np6,offset6,domain,ip4,ip6))
-                scc += 1
-            elif(mode=="nonsiblings"):
-                # DONT USE
-                logging.debug("nonsiblings: putting into siblingcands dict: {} {}".format(ip4, ip6))
-                siblingcands[(ip4,ip6)] = [np4, np6, domain]
-                continue
-
-
-            # even while reading input, take results off the output queue to avoid bloating it
+            logging.debug("calling calcsib on {} , {}, {}".format(
+                domain, ip4, ip6))
+            print("+", end="")
+            tasks.put(rl_calcsib(np4, offset4, np6, offset6, opts[ip4], opts[ip6], domain, ip4, ip6))
+            scc += 1
+            # continuously take results off the output queue to keep it small
             while(tasks.qsize() > 100):
                 if(results.empty()):
                     continue
                 while(not results.empty()):
                     s = results.get()
                     if(not s):
-                        #print("no s!")
                         logging.warning("no s!")
                     else:
-                        decisioncache[(s.ip4,s.ip6)] = s.dec
-                        objectscache[(s.ip4,s.ip6)] = s
-                        #print("decision: ", s.domain , s.ip4 ,  s.ip6, s.dec)
-                        logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
-                        #writer.writerow([s.domain, s.ip4, s.ip6,
-                        #                 s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
-                        #                 s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
-                        #                s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.ott_rng_diff_rel,
-                        #                s.perc_85_val, s.timestamps_diff, s.dec])
-                        writefromclass(s,writer)
+                        decisioncache[(s.ip4, s.ip6)] = s.dec
+                        objectscache[(s.ip4, s.ip6)] = s
+                        logging.info("decision: {} {} {} {}".format(
+                            s.domain, s.ip4, s.ip6, s.dec))
+                        writefromclass(s, writer)
 
-            count=count+1
+            count += 1
             continue
 
-
-    if mode == "nonsiblings": # form non-sibling pairs from siblings dicts
-        nonsiblings = dict()
-        for k1, v1 in siblingcands.items():
-            for k2, v2 in siblingcands.items():
-                if k1 != k2:
-                    #print("DEBUG: v1 {}, v2 {}, \n v1[0] {}, v2[0]: {}".format(v1 ,v2, v1[0], v2[0]))
-                    nonsiblings[(k1[0], k2[1])] = [v1[0], v2[1], "v4-"+v1[2]+"--v6-"+v2[2]]
-                    nonsiblings[(k2[0], k1[1])] = [v2[0], v1[1], "v4-"+v2[2]+"--v6-"+v1[2]]
-        # now we should have constructed a large non-sibling dataset
-        print("nonsiblings length: {}".format(len(nonsiblings)))
-        for k,v in nonsiblings.items():
-            # DONT USE
-            tasks.put(rl_calcsib(v[0],v[1],v[2],k[0],k[1]))
-            #tasks.put(rl_calcsib(np4,np6,domain,ip4,ip6))
-            while(tasks.qsize() > 100):
-                if(results.empty()):
-                    continue
-                while(not results.empty()):
-                    s = results.get()
-                    if(not s):
-                        #print("no s!")
-                        logging.warning("no s!")
-                    else:
-                        decisioncache[(s.ip4,s.ip6)] = s.dec
-                        objectscache[(s.ip4,s.ip6)] = s
-                        #print("decision: ", s.domain , s.ip4 ,  s.ip6, s.dec)
-                        logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
-                        writefromclass(s,writer)
-                        """writer.writerow([s.domain, s.ip4, s.ip6,
-                                         s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
-                                         s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
-                                        None, None, None, s.ott4_rng, s.ott6_rng,
-                                        s.ott_rng_diff, None, s.perc_85_val, s.timestamps_diff, s.dec])
-                                        """
-
-
-    print("\nRead {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, sys.argv[1], fc, cc, scc))
-    logging.debug("Read {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, sys.argv[1], fc, cc, scc))
+    print("\nRead {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, args.scfile, fc, cc, scc))
+    logging.debug("Read {} lines from sc file {} with {} fails, {} cache decisions and {} calcsib calls. ".format(rowcount, args.scfile, fc, cc, scc))
     logging.debug("fails substructured into line format: {} nov4ts: {}  nov6ts: {} too-little-data: {} tmd: {}".format(lfc, fcnov4, fcnov6, fctld, fctmd))
 
+
+def loadtcpopts(args):
+    # loads tcp opts from file in format
+    # 1.2.3.4,MSS-SACK-TS-N-WS-,7
+    d = dict()
+    with open(args.optsfile) as csvfile:  # iterate through sibling cands
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            ip = row[0]
+            opts = row[1] + row[2]
+            if ip in d:
+                if d[ip] == opts:
+                    continue
+                else:
+                    logging.error("CRITICAL: Multiple TCP Options for IP {}".format(ip))
+            else:
+                logging.debug("Setting TCP Options {} for IP {}".format(ip, opts))
+                d[ip] = opts
+    return d
+
+
+def main():
+    args = argprs()  # parse arguments
+    if args.mode == "plot":
+        print("plotting...")
+        plotclassfrompickle(args.scfile+args.tsf, "siblings")
+        sys.exit(0)
+    elif args.mode == "sibling":
+        pass
+    else:
+        print("invalid mode {}, exiting!".format(args.mode))
+        sys.exit(1)
+
+    writer, ignore, fd, csv_path_abs, logfile = startwriter(args)
+    format = '%(asctime)s - %(levelname)-7s - %(message)s'
+    logging.basicConfig(filename=args.scfile+args.tsf + '-decisionlog.log',
+                        level=logging.DEBUG, format=format, filemode='w')
+
+    d, p, offset = loadts(args)
+    tasks, results, consumers = startmp()
+
+    opts = loadtcpopts(args)
+    loadsc(args, d, p, offset, tasks, results, opts, writer)
+
     # tasks.join() can sometimes block to inifinity - work around
-    while(tasks.qsize()>0):
+    while(tasks.qsize() > 0):
         print("tasks queue size:" + str(tasks.qsize()))
         logging.debug("tasks queue size:" + str(tasks.qsize()))
         time.sleep(1)
@@ -1124,31 +1114,27 @@ if __name__ == ("__main__"):
     time.sleep(1)
     print("results queue size: " + str(results.qsize()))
     logging.debug("results queue size: " + str(results.qsize()))
-    while(results.qsize()>0):
+    while(results.qsize() > 0):
         s = results.get()
         if(s):
-            logging.info("decision: {} {} {} {}".format(s.domain, s.ip4, s.ip6, s.dec))
-            writefromclass(s,writer)
-            """writer.writerow([s.domain, s.ip4, s.ip6,
-                             s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
-                             s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
-                            None, None, None, s.ott4_rng, s.ott6_rng,
-                            s.ott_rng_diff, None, s.perc_85_val, s.timestamps_diff, s.dec])"""
-
-            objectscache[(s.ip4,s.ip6)] = s
-        #else:
-            #print("result pipe empty, exiting ...")
-            #logging.debug("result pipe empty, exiting ...")
-        #    continue
+            logging.info("decision: {} {} {} {}".format(
+                s.domain, s.ip4, s.ip6, s.dec))
+            writefromclass(s, writer)
+            objectscache[(s.ip4, s.ip6)] = s
     print("results queue size (check, must be 0): " + str(results.qsize()))
     logging.debug("results queue size: " + str(results.qsize()))
     fd.close()
-    pp.close()
-    pickle.dump(objectscache,pklfileres, protocol=4) # memory error here when running on large (>50k scs) files
+    pklfileres = open(args.scfile + args.tsf + ".resultspickle", 'wb')
+    # memory error here when running on large (>50k scs) files:
+    pickle.dump(objectscache, pklfileres, protocol=4)
     pklfileres.close()
-    print("Decision file: {}".format(sys.argv[1]+tsf + "."+mode+".siblingresult.csv"))
-    print("Done, check log under {}".format(sys.argv[1]+tsf+"."+mode+'-decisionlog.log'))
-
+    print("Decision file: {}".format(
+        args.scfile + args.tsf + ".siblingresult.csv"))
+    print("Done, check log under {}".format(
+        args.scfile + args.tsf + ".decisionlog.log"))
 
     for w in consumers:
         w.terminate()
+
+if __name__ == ("__main__"):
+    main()
