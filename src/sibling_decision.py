@@ -880,7 +880,7 @@ def argprs():
 
     args = parser.parse_args()
     args.tsp, args.tsf = os.path.split(args.tsfile)
-    print("args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
+    logging.debug("args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
         args.scfile, args.tsfile, args.optsfile, args.mode))
     return args
 
@@ -940,7 +940,7 @@ def loadts(args):
         for ip, value in p.items():
             d[ip].resize((p[ip], 2))
 
-        pklfile = open(args.tsfile+".pickle",'wb')
+        pklfile = open(args.tsfile+".pickle", 'wb')
         pickle.dump([d, p, offset], pklfile)
         pklfile.close()
     print("ts data loading done after {} seconds, hosts: {} {} ".format(time.time()-time_before, len(d), len(p)))
@@ -1068,21 +1068,29 @@ def loadsc(args, d, p, offset, tasks, results, opts, writer):
 
 def loadtcpopts(args):
     # loads tcp opts from file in format
-    # 1.2.3.4,MSS-SACK-TS-N-WS-,7
+    # 1.2.3.4,MSS-SACK-TS-N-WS-7
     d = dict()
-    with open(args.optsfile) as csvfile:  # iterate through sibling cands
-        csvreader = csv.reader(csvfile)
-        for row in csvreader:
-            ip = row[0]
-            opts = row[1] + row[2]
-            if ip in d:
-                if d[ip] == opts:
-                    continue
+    try:
+        pklfile = open(args.optsfile + ".pickle", 'rb')
+        d = pickle.load(pklfile)
+        pklfile.close()
+    except:
+        with open(args.optsfile) as csvfile:  # iterate through sibling cands
+            csvreader = csv.reader(csvfile)
+            for row in csvreader:
+                ip = row[0]
+                opts = row[1]
+                if ip in d:
+                    if d[ip] == opts:
+                        continue
+                    else:
+                        logging.error("CRITICAL: Multiple TCP Options for IP {}".format(ip))
                 else:
-                    logging.error("CRITICAL: Multiple TCP Options for IP {}".format(ip))
-            else:
-                logging.debug("Setting TCP Options {} for IP {}".format(ip, opts))
-                d[ip] = opts
+                    logging.debug("Setting TCP Options {} for IP {}".format(ip, opts))
+                    d[ip] = opts
+        pklfile = open(args.optsfile+".pickle",'wb')
+        pickle.dump(d, pklfile)
+        pklfile.close()
     return d
 
 

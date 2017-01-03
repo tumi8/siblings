@@ -93,7 +93,7 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
       return;
   }
   if (!tcp){
-    printf("NOT TCP!\n");
+    fprintf(stderr, "NOT TCP!\n");
     return;
   }
 
@@ -104,32 +104,14 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
   }
   sourcePort = ntohs(tcpHeader->source);
   destPort = ntohs(tcpHeader->dest);
-   // tcp->th_off = # of 32-bit words in header, of which 5 are basic header
   unsigned int option_bytes = (4*((unsigned int) 0xf & tcpHeader->th_off))-20;
-  //unsigned int option_bytes = (4*((unsigned int) 0xf & tcpHeader->th_off))- sizeof(struct tcphdr);
   char* opts = (char*)&tcpHeader[1];
-  //static char* buft;
-	//buft = (char*) malloc(200); //
-  //buft[200];
   if(option_bytes > 40){
-    printf("TCP options > 40 bytes! (%u) bytes. \n",option_bytes);
+    fprintf(stderr, "TCP options > 40 bytes! (%u) bytes. \n",option_bytes);
   }
-  //unsigned int i=0;
-  //static char* buf;
-  //buf = (char*) malloc(200);
-  //printf("option bytes: %d\n",option_bytes);
-  snprintf(buf,3,"0x");
-  for (i=0;i<option_bytes && i<40;i++){
-    snprintf(&buf[i*2+2],3,"%02x",0xff & opts[i]);
-  }
-  // safety stop
-  buf[41*2+2] = '\0';
-  //printf("options: %s , option_bytes: %d \n", buf, option_bytes);
-  buft[0] = '\0';
-
+  buft[0] = '\0'; // just for safety reasons
   for (i=0;i<option_bytes;){
     cur=0xff & opts[i];
-    //printf("-%s.%02x-",buft,cur);
     switch(cur) {
       case 0:
         if(	(0xff & opts[i+1]) == 0 &&
@@ -162,9 +144,6 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
       case 8: // timestamps
       if( (0xff & opts[i+1]) == 0x0a){
         snprintf(&buft[j],4,"TS-"); j=j+3;
-        //fs_modify_uint64(fs, "tsval", (uint64_t)(ntohl(*(unsigned int*) &opts[i+2])));
-        //fs_modify_uint64(fs, "tsecr", (uint64_t)(ntohl(*(unsigned int*) &opts[i+6])));
-        //fs_modify_uint64(fs, "tsdiff", (uint64_t) 1^(*(unsigned int*) &opts[i+2]==*(unsigned int*) &opts[i+6]));
         i=i+10;
       } else {
         snprintf(&buft[j],5,"TXX-"); j=j+4;
@@ -172,9 +151,7 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
       }
       break;
       case 3: // Window Scale
-        //snprintf(&buft[j],4,"WS-"); j=j+3;
         snprintf(&buft[j],6,"WS%02d-",0xff & opts[i+2]); j=j+5;
-        //fs_modify_uint64(fs, "wscale", (uint64_t) (0xff &opts[i+2]));
         i=i+3;
         break;
       case 30: // MPTCP
@@ -185,14 +162,6 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
         if((unsigned int)(0xff & opts[i+1])>2){
           // response with cookie
           snprintf(&buft[j],6,"TFOC-"); j=j+5;
-          //fs_modify_uint64(fs, "mptcpdiff", (uint64_t) 0);
-          //static char *tfobuf;
-          //tfobuf = xmalloc(60); // 2(0x) + 16*2 (1byte=2hexzahlen) + delim
-          //snprintf(&tfobuf[0],3,"0x");
-          //for (unsigned int k=2;k<(unsigned int)(0xff & opts[i+1]) && ((2+(k-2)*2) < 40);k++){
-          //  snprintf(&tfobuf[2+(k-2)*2],3,"%02x",0xff & opts[i+k]); 
-          //}
-          //fs_modify_string(fs, "tfocookie", (char*)tfobuf,1);
         } else {
           // tfo reply without cookie (stupid middlebox option echo)
           snprintf(&buft[j],6,"TFOE-"); j=j+5;
@@ -263,10 +232,6 @@ void packetHandler(u_char *userData, const struct pcap_pkthdr* pkthdr, const u_c
       break;
     } // switch option byte
   } // for option bytes
-  //snprintf(&buft[0],2,"T");
-  //printf("%s,%s,%s\n",sourceIp,buft,buf);
   printf("%s,%s\n",sourceIp,buft);
-  //free(buft);
-  //free(buf);
   return;
 } // packethandler function
