@@ -24,20 +24,28 @@ except:
     seed = 42
 
 random.seed(seed)
-#print(arr)
 random.shuffle(arr)
+
+try:
+    n = int(sys.argv[3])
+    if n > len(arr):
+        n= len(arr) -1
+except:
+    n=1
+
 #print("shuffled!")
 #print(arr)
 
-outfname = "{}__nonsiblings_seed{}".format(sys.argv[1], seed)
+outfname = "{}__nonsiblings_seed{}_n{}".format(sys.argv[1], seed,n)
 fd = open(outfname, "w")
 #writer = csv.writer(fd)
+ctr=0
 
 for i in range(len(arr)):
-    #orig_line = "{},{},{}".format(arr[i][0],arr[i][1],arr[i][2]) # offset IPv6
-    line = "{}_+_{},{},{}".format(arr[i][0], arr[(i+1)%len(arr)][0], arr[i][1], arr[(i+1)%len(arr)][2]) # offset IPv6
-    #print("orig_line:", orig_line)
-    #print("chng_line:", line)
-    fd.write(line+"\n")
+    for j in range(1,n):
+        if arr[i][0] != arr[(i+j)%len(arr)][0]:
+            line = "{}_+_{},{},{}".format(arr[i][0], arr[(i+j)%len(arr)][0], arr[i][1], arr[(i+j)%len(arr)][2]) # offset IPv6
+            fd.write(line+"\n")
+            ctr += 1
 
-print("Written non-siblings of seed {} to file {}".format(seed, outfname))
+print("Written {} non-siblings of seed {} to file {}".format(ctr, seed, outfname))

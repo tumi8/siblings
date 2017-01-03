@@ -850,8 +850,27 @@ def mapCurve(cln_4, cln_6):
 
 
 if __name__ == ("__main__"):
-    count=0
-    rowcount=0
+    count=0 # are these used?
+    rowcount=0 # are these used?
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--scfile', action="store", dest="scfile",
+                        help='the sibling candidate file, typically the '
+                        'hitlist used for scanning')
+    parser.add_argument('-t', '--tsfile',  action="store", dest="tsfile",
+                        help='the timestamps csv file')
+    parser.add_argument('-o', '--tsoptfile',  action="store", dest="optsfile",
+                        help='the file with TCP options')
+    parser.add_argument('--plot', dest='mode', action='store_const',
+                        const="plot", default="sibling",
+                        help='optional: create PDF with plots')
+
+    args = parser.parse_args()
+    print("args: scfile = {} \n tsfile = {} \n optsfile = {} \n mode  = {}".format(args.scfile, args.tsfile, args.optsfile, args.mode))
+    sys.exit(1)
+
     if len(sys.argv) != 3 + 1:
         print("Usage: file.py sibling-cands tstamps function")
         print("function: plot-siblings plot-nonsiblings siblings nonsiblings")
@@ -1123,10 +1142,10 @@ if __name__ == ("__main__"):
         #    continue
     print("results queue size (check, must be 0): " + str(results.qsize()))
     logging.debug("results queue size: " + str(results.qsize()))
-    pickle.dump(objectscache,pklfileres)
-    pklfileres.close()
     fd.close()
     pp.close()
+    pickle.dump(objectscache,pklfileres, protocol=4) # memory error here when running on large (>50k scs) files
+    pklfileres.close()
     print("Decision file: {}".format(sys.argv[1]+tsf + "."+mode+".siblingresult.csv"))
     print("Done, check log under {}".format(sys.argv[1]+tsf+"."+mode+'-decisionlog.log'))
 
