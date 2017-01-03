@@ -120,9 +120,9 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     s.opts4 = opts4
     s.opts6 = opts6
     if opts4 == opts6:
-        s.optsdiff = 1
-    else:
         s.optsdiff = 0
+    else:
+        s.optsdiff = 1
     ignore, den_arr4, errorindicator4 = s.processTrace2(np4, 4)
     ignore, den_arr6, errorindicator6 = s.processTrace2(np6, 6)
     if errorindicator4 or errorindicator6:
