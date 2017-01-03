@@ -26,11 +26,13 @@ from collections import Counter
 import logging
 import argparse
 
+"""
 ppd_rng_elm = 0
 ott_rng_elm = 0
 ott_rng_unk = 0
-mixd_elm = 0
-mixd_unk = 0
+"""
+mixd_elm = 0  # actually used
+# mixd_unk = 0  # actually used
 val_slp = 0
 # false postive and false negative count
 false_pos = 0
@@ -39,9 +41,11 @@ true_pos = 0
 true_neg = 0
 neg_skew = 0
 tcp_sig = 0
+
 const_skew = 0
 ipcache = dict()
 objectscache = dict()
+
 
 def calCDF(diff_arr):
     """"cumulative distribution function"""
@@ -162,8 +166,8 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     # clean points that are two standard deviation from the median
     cln_4, cln_6, ppd_arr_cut = s.delOutliers(med_thresh, s.mean_cln_4, s.mean_cln_6, idx6_arr, ppd_arr)
     s.ppd_range = max(ppd_arr_cut) - min(ppd_arr_cut)
-    ppd_mean = np.mean(ppd_arr_cut)
-    ppd_median = np.median(ppd_arr_cut)
+    # ppd_mean = np.mean(ppd_arr_cut)  # vulture says this is not used
+    # ppd_median = np.median(ppd_arr_cut)  # dito
 
     # calculate alpha
     s.a4, ignore, ignore, s.r4_sqr = s.calAlpha(cln_4)
@@ -202,7 +206,7 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     y_mapped = [v for u, v in mapped]
     if curve == "4":
         up_rng = min(len(y_mapped), len(s.spl_arr4))
-        mapped_diff2 = abs(y_mapped[:up_rng] - s.spl_arr4[:up_rng])
+        # mapped_diff2 = abs(y_mapped[:up_rng] - s.spl_arr4[:up_rng]) ## allegedly unused
         for i in range(up_rng):
             mapped_diff.append(abs(y_mapped[i] - s.spl_arr4[i]))
     elif curve == "6":
@@ -309,13 +313,16 @@ class skews():
         offset_arr = [(round(x, 6), round(y, 6)) for x, y in zip(Xi_arr, Yi_arr)]
         return offset_arr
 
+        """
     def rawOffsets(self, Xi_arr, Vi_arr):
-        """use raw tcp timestamps to calculate the offset array"""
+        use raw tcp timestamps to calculate the offset array
 
         Yi_arr = [(vi - xi) for vi, xi in zip(Vi_arr, Xi_arr)]  # offset in miliseconds
         offset_arr = [(round(x, 6), round(y)) for x, y in zip(Xi_arr, Yi_arr)]
 
         return offset_arr
+        """
+
 
     def meanMedianStd(self, diff_arr):
         """calculates the median,mean and the standard deviation of the pair wise point distance array"""
@@ -653,7 +660,7 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
     global neg_skew
     global val_slp
     global ott_rng_unk
-    global mixd_unk
+    #global mixd_unk
     global ott_rng_elm
     global mixd_elm
     global const_skew
@@ -665,74 +672,72 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
     if (r4_square >= validslope_metric and r6_square >= validslope_metric) and ((a4 < 0 and a6 > 0) or (a4 > 0 and a6 < 0)):
         const_skew += 1
         final_dec += "non-sibling(slope sign mismatch)"
-        if dataset == "sib":
-            false_neg += 1
-        elif dataset == "non-sib":
-            true_neg += 1
+        # if dataset == "sib":
+        #    false_neg += 1
+        # elif dataset == "non-sib":
+        #    true_neg += 1
 
     # significant rsquare with same slope sign and small slope diff or else continue to the next step (and not clasify and non-siblings)
     elif (r4_square >= validslope_metric and r6_square >= validslope_metric) and (np.sign(a4) == np.sign(a6)) and (abs(a4 - a6) <= slope_diff_metric):
         const_skew += 1
         final_dec += "sibling(valid slope/small slope diff)"
-        if dataset == "non-sib":
-            false_pos += 1
-        elif dataset == "sib":
-            true_pos += 1
+        #if dataset == "non-sib":
+        #    false_pos += 1
+        #elif dataset == "sib":
+        #    true_pos += 1
         val_slp += 1
 
     # for detecting one linear skew trend and avoiding borderline cases
     elif ((r4_square >= validslope_metric and r6_square < validslope_metric) or (r4_square <= validslope_metric and r6_square > validslope_metric)) and \
             abs(r4_square - r6_square) > rsqr_diff_metric:
         final_dec += "non-sibling(big rsqr deviation)"
-        if dataset == "sib":
-            false_neg += 1
-        elif dataset == "non-sib":
-            true_neg += 1
+        #if dataset == "sib":
+        #    false_neg += 1
+        #elif dataset == "non-sib":
+        #    true_neg += 1
 
     # ott range test
     elif rng4 <= neglig_skew_metric and rng6 <= neglig_skew_metric:  # both curves with small ranges
-        #print("neg skew")
         final_dec += "no skew(unknown)"
-        neg_skew += 1
-
-        ott_rng_unk += 1
-        if not passed:
-            mixd_unk += 1
+        # neg_skew += 1
+        # ott_rng_unk += 1
+        # if not passed:
+        #    mixd_unk += 1
 
     # ott range delta
     elif ((rng4 <= neglig_skew_metric and rng6 > neglig_skew_metric) or (rng6 <= neglig_skew_metric and rng4 > neglig_skew_metric)) \
             and rng_diff > ott_rng_diff_metric:  # one curve with a small range
         final_dec += "non-sibling(one negligible and ott diff delta too large)"  # to catch the borderline cases of one significant skew
-        if dataset == "sib":
-            false_neg += 1
-        elif dataset == "non-sib":
-            true_neg += 1
+        # if dataset == "sib":
+        #    false_neg += 1
+        # elif dataset == "non-sib":
+        #    true_neg += 1
 
-        ott_rng_elm += 1
-        if not passed:
-            mixd_elm += 1
+        #ott_rng_elm += 1
+        #if not passed:
+        #    mixd_elm += 1
 
     # spline diff test
     elif spl_diff_85 <= spline_diff_metric:
         final_dec += "sibling(spline test)"
-        if dataset == "non-sib":
-            false_pos += 1
-        elif dataset == "sib":
-            true_pos += 1
+        #if dataset == "non-sib":
+        #    false_pos += 1
+        #elif dataset == "sib":
+        #    true_pos += 1
 
     elif (rng4 > large_ott_rng and rng6 > large_ott_rng) and (spl_diff_85 <= spline_diff_ldynam_metric):
         final_dec += "sibling(spline test)bigrng"
-        if dataset == "non-sib":
-            false_pos += 1
-        elif dataset == "sib":
-            true_pos += 1
+        #if dataset == "non-sib":
+        #    false_pos += 1
+        #elif dataset == "sib":
+        #    true_pos += 1
 
     else:
         final_dec += "non-sibling(spline test)"
-        if dataset == "sib":
-            false_neg += 1
-        elif dataset == "non-sib":
-            true_neg += 1
+        # if dataset == "sib":
+        #    false_neg += 1
+        # elif dataset == "non-sib":
+        #    true_neg += 1
 
     return final_dec
 
