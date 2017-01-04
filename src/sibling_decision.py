@@ -573,77 +573,11 @@ def plotclass(pp, s):
     pp.savefig(fig)
     plt.close(fig)
 
-""" LIKELY NOT USED!!
-def plot(pp, index, host, arr4, arr6, spl_arr4=None, spl_arr6=None, xs4=None, xs6=None, ppd_arr=None, threshhold=None, a4=None, b4=None, a6=None, b6=None, data=None, xs=None,
-         cut_size=None, q4_1=None, q4_2=None, q4_3=None, bin_size_4=None, q6_1=None, q6_2=None, q6_3=None, bin_size_6=None, max=None, min=None, sub=None):
-    X4, Y4 = zip(*arr4)
-    X6, Y6 = zip(*arr6)
-    y4 = []
-    y6 = []
-
-    print("plotting entry {}".format(host))
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.plot(X4, Y4, 'bo', color="blue", alpha=0.4, label="IPv4")
-    ax1.plot(X6, Y6, 'bo', color="red", alpha=0.4, label="IPv6")
-
-    #if spl_arr4 and spl_arr6:
-    try:
-        #print(spl_arr4, spl_arr6)
-        #xs4, spl_y4 = zip(*spl_arr4)
-        #xs6, spl_y6 = zip(*spl_arr6)
-        ax1.plot(xs4, spl_arr4, linewidth=4, color="blue", alpha=0.4)
-        ax1.plot(xs6, spl_arr6, linewidth=4, color="red", alpha=0.4)
-    except Exception as e:
-        print("Not plotting spline for host {} due to exception {}".format(host, e))
-        pass
-
-    if data:  # reg lines
-        y4 = [a4 * xi + b4 for xi in X4]
-        y6 = [a6 * xj + b6 for xj in X6]
-        plt.plot(X4, y4, color="cyan", label="reg4")
-        plt.plot(X6, y6, color="pink", label="reg6")
-
-    if ppd_arr:
-        if cut_size:
-            X4 = [i for i, j in arr4[:cut_size]]
-            plt.plot(X4, ppd_arr, "--r", color="green")
-        else:
-            plt.plot(X4, ppd_arr, "--r", color="green")
-
-    if threshhold:
-        lower = threshhold[0]
-        upper = threshhold[1]
-        plt.axhline(y=lower, xmin=0, xmax=X6[len(X6) - 1], hold=None, color="yellow", linewidth=2)
-        plt.axhline(y=upper, xmin=0, xmax=X6[len(X6) - 1], hold=None, color="yellow", linewidth=2)
-
-    if max and min:
-        x_max, y_max = zip(*max)
-        x_min, y_min = zip(*min)
-        ax1.plot(x_max, y_max, 'bo', color="black", alpha=1, label="max")
-        ax1.plot(x_min, y_min, 'bo', color="orange", alpha=1, label="min")
-
-    if sub:
-        x, y = zip(*sub)
-        ax1.plot(x, y, color="purple", linewidth=4, alpha=1)
-
-    plt.legend(loc='lower right')
-    plt.title('Host: ' + host)
-    plt.xlabel('measurement time (h)')
-    plt.ylabel('observed offset (msec)')
-    ticks = ax1.get_xticks() / 3600
-    ticks = [round(t, 1) for t in ticks]
-    ax1.set_xticklabels(ticks)
-    # saving all in PDF
-    pp.savefig(fig)
-    plt.close(fig)
-"""
-
 
 def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
              rng_diff, spl_diff_85, dataset=None):
     """ decison algorithm """
-    #passed = False
+    # passed = False
     validslope_metric = 0.81  # linear slopes obtained by r values and plots (r value of 0.9 or greater)
     rsqr_diff_metric = 0.2
     neglig_skew_metric = 1.5  # obtained from the plots
@@ -658,10 +592,10 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
     #global false_pos
     #global false_neg
     #global neg_skew
-    global val_slp
-    global ott_rng_unk
+    # global val_slp
+    #global ott_rng_unk
     #global mixd_unk
-    global ott_rng_elm
+    #global ott_rng_elm
 #    global const_skew
     #global true_pos
     #global true_neg
@@ -753,21 +687,6 @@ def binEqual(offsets):
 
     return bin_size
 
-"""
-def polyreg(first, second, third):
-    NOT USED ? polynomial regression on x equal pieces of the offset trend
-
-    x1, y1 = zip(*first)
-    x2, y2 = zip(*second)
-    x3, y3 = zip(*third)
-
-    co1 = np.polyfit(x1, y1, 3)
-    co2 = np.polyfit(x2, y2, 3)
-    co3 = np.polyfit(x3, y3, 3)
-
-    return co1, co2, co3
-"""
-
 
 def spline(bin_size, offsets):
     """compute piecewise polynomial splines of degree three"""
@@ -775,9 +694,12 @@ def spline(bin_size, offsets):
     xs = np.arange(x[0], x[-1], 120)
 
     # array of knots (with the start and end which is addes automatically 13 knots meanaing 12 pieces)
-    t = [offsets[0][0] + bin_size, offsets[0][0] + bin_size * 2, offsets[0][0] + 3 * bin_size, offsets[0][0] + 4 * bin_size,
-         offsets[0][0] + 5 * bin_size, offsets[0][0] + 6 * bin_size, offsets[0][0] + 7 * bin_size, offsets[0][0] + 8 * bin_size,
-         offsets[0][0] + 9 * bin_size, offsets[0][0] + 10 * bin_size, offsets[0][0] + 11 * bin_size]
+    t = [offsets[0][0] + bin_size, offsets[0][0] + bin_size * 2,
+         offsets[0][0] + 3 * bin_size, offsets[0][0] + 4 * bin_size,
+         offsets[0][0] + 5 * bin_size, offsets[0][0] + 6 * bin_size,
+         offsets[0][0] + 7 * bin_size, offsets[0][0] + 8 * bin_size,
+         offsets[0][0] + 9 * bin_size, offsets[0][0] + 10 * bin_size,
+         offsets[0][0] + 11 * bin_size]
 
     # compute a spline polynomial of degree 3 over 5 equal pieces for the y points over steps of 1 sec on the x axis.
     try:
@@ -792,30 +714,6 @@ def spline(bin_size, offsets):
     return orig_curve, deriv_curve, xs
 
 
-"""
-def splineDist(y1, y2):
-    NOT USED ? Evaluate the corridor of the v4 and v6 splines
-    a = y1
-    b = y2
-    # non-equivalent sizes
-    u_bnd = min(len(a), len(b))
-    diff_arr = []
-    mad_lst = []
-
-    for i in range(u_bnd):
-        diff_arr.append(abs(a[i] - b[i]))
-
-    # compute std from median
-    median = np.median(diff_arr)
-    consis_const = 1.4826  # consistency constant for a normal distribution
-    for point in diff_arr:
-        mad_lst.append(abs(point - median))
-    std_med = consis_const * np.median(mad_lst)  # median absolute deviation*cosis_cons = standard deviation from the median of a set
-
-    return diff_arr, median, std_med
-"""
-
-
 def mapCurve(cln_4, cln_6):
     "Maps the upper curve on the lower one"
 
@@ -828,7 +726,7 @@ def mapCurve(cln_4, cln_6):
     x_mapped = []
     y_mapped = []
     curve = ""  # which curve to use for subtracting from mapped
-    time_before=time.time()
+    time_before = time.time()
 
     if mean_diff > 0:
         y_mapped = v4_arr[:up_rng] - mean_diff
@@ -868,7 +766,7 @@ def loadts(args):
     # writing and reading pickle are both about 10x faster than reading csv
     # hence, simplify repeated execs by providing pickle file
     time_before = time.time()
-    #timestart = time.time()
+    # timestart = time.time()
     d = dict()  # dictionary of numpy arrays that hold timestamps per IP
     p = dict()  # dictionary of IPs, holding # timestamps per IP
     offset = dict()  # dict to hold tsval offset per IP
