@@ -26,11 +26,6 @@ from collections import Counter
 import logging
 import argparse
 
-"""
-ppd_rng_elm = 0
-ott_rng_elm = 0
-ott_rng_unk = 0
-"""
 mixd_elm = 0  # actually used
 # mixd_unk = 0  # actually used
 val_slp = 0
@@ -130,20 +125,20 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
         return s
     # check that Hz are similar
     try:
-        hzdiff = abs(s.hz4-s.hz6)
+        s.hzdiff = abs(s.hz4-s.hz6)
     except:
         logging.error("Cannot calculate hzdiff for domain {}".format(self.domain))
-        hzdiff = "ERROR"
+        s.hzdiff = "ERROR"
     if abs(s.hz4 - s.hz6) > 0.1:
         logging.warning("calcsib: hz different for domain {}, hz4 {}, hz6 {}".format(s.domain, s.hz4, s.hz6))
         s.dec = "non-sibling (hz different)"
         return s
 
     try:
-        hzr2diff = abs(s.hz4r2-s.hz6r2)
+        s.hzr2diff = abs(s.hz4r2-s.hz6r2)
     except:
         logging.error("Cannot calculate hzr2diff for domain {}".format(self.domain))
-        hzdiff = "ERROR"
+        s.hzdiff = "ERROR"
 
     # check how close raw tcp ts values are
     td_tcpt = (s.tcp_t_offset6 - s.tcp_t_offset4)/np.mean([s.hz4, s.hz6]) # time distance between initial tcp timestamp v4/v6 in seconds
@@ -337,16 +332,6 @@ class skews():
         Yi_arr = [(wi - xi) * 1000 for wi, xi in zip(Wi_arr, Xi_arr)]  # offset in miliseconds
         offset_arr = [(round(x, 6), round(y, 6)) for x, y in zip(Xi_arr, Yi_arr)]
         return offset_arr
-
-        """
-    def rawOffsets(self, Xi_arr, Vi_arr):
-        use raw tcp timestamps to calculate the offset array
-
-        Yi_arr = [(vi - xi) for vi, xi in zip(Vi_arr, Xi_arr)]  # offset in miliseconds
-        offset_arr = [(round(x, 6), round(y)) for x, y in zip(Xi_arr, Yi_arr)]
-
-        return offset_arr
-        """
 
 
     def meanMedianStd(self, diff_arr):
@@ -975,7 +960,7 @@ def loadts(args):
         pklfile = open(args.tsfile+".pickle", 'wb')
         pickle.dump([d, p, offset], pklfile)
         pklfile.close()
-    print("ts data loading done after {} seconds, hosts: {} {} ".format(time.time()-time_before, len(d), len(p)))
+    print("ts data loading done after {} seconds, hosts: {} {} ".format(round(time.time()-time_before,2), len(d), len(p)))
     logging.debug("ts data loading done after: {} {} {}".format(time.time()-time_before, len(d), len(p)))
     return d, p, offset
 
