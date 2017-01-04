@@ -26,19 +26,18 @@ from collections import Counter
 import logging
 import argparse
 
-mixd_elm = 0  # actually used
-# mixd_unk = 0  # actually used
-val_slp = 0
-# false postive and false negative count
-false_pos = 0
-false_neg = 0
-true_pos = 0
-true_neg = 0
-neg_skew = 0
-tcp_sig = 0
 
-const_skew = 0
-ipcache = dict()
+# mixd_unk = 0  # actually used
+#val_slp = 0
+# false postive and false negative count
+#false_pos = 0
+#false_neg = 0
+#true_pos = 0
+#true_neg = 0
+#neg_skew = 0
+#tcp_sig = 0
+#const_skew = 0
+#ipcache = dict()
 objectscache = dict()
 
 
@@ -83,7 +82,8 @@ class Consumer(multiprocessing.Process):
 
 
 class rl_calcsib(object):
-    def __init__(self, np4, offset4, np6, offset6, opts4, opts6, domain, ip4, ip6):
+    def __init__(self, np4, offset4, np6, offset6, opts4, opts6,
+                 domain, ip4, ip6):
         self.np4 = np4
         self.offset4 = offset4
         self.np6 = np6
@@ -205,8 +205,6 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     s.bin_size_4 = binEqual(packed4)
     s.bin_size_6 = binEqual(packed6)
 
-
-
     # spline polynomial on [No] equal pieces of skew trend
     try:
         s.spl_arr4, deriv_arr_4, xs4 = spline(s.bin_size_4, packed4)
@@ -217,7 +215,6 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
         logging.error("calcsib spline exception: {}, parameters: s.bin_size_4 {} \n packed4 {} \ns.bin_size_6 {}\n packed6 {}\n".format(e, s.bin_size_4, packed4, s.bin_size_6, packed6))
         s.dec = "error: spline calculation failed!"
         return s
-
 
     mapped_diff = []  # diff between one curve and its mapped ones
     mapped, spline_mean_diff, curve = mapCurve(list(zip(xs4, s.spl_arr4)), list(zip(xs6, s.spl_arr6)))
@@ -275,7 +272,6 @@ class skews():
     opts4, opts6, optsdiff = None, None, None
     hzdiff, hzr2diff, adiff, r2diff = None, None, None, None
 
-
     def calHertz(self, rcv_t, tcp_t, ver):
         """ From rec_t and tcp_t, calculate Hertz of remote clock
             hertz is slope of linear regression
@@ -303,14 +299,11 @@ class skews():
             vi = tcp_t[i] + adjustment - tcp_t[0]
             Xi_arr[i-1] = xi
             Vi_arr[i-1] = vi
-        # rcv_t is already zero-based upon data load
-        #Xi_arr = rcv_t
         slope, intercept, rval, pval, stderr = stats.linregress(Xi_arr, Vi_arr)
         hzr2 = rval*rval
-        #logging.debug("calHertz: domain {} rcv_t is {}".format(self.domain, rcv_t))
         logging.debug("calHertz: domain {} count is {}, slope {}, intercept {}, hzr2 {}, pval {}, stderr {}, rcv_t1 {}, tcp_t0 {}, Xi_arr is {}, Vi_arr {}".format(
             self.domain, count, slope, intercept, hzr2, pval, stderr, rcv_t[1], tcp_t[0], None, None))
-        slope = round(slope) # round to next integer according to Kohno et al, Sec. 4.3
+        slope = round(slope)  # round to next integer according to Kohno et al, Sec. 4.3
         if ver == 4:
             self.hz4 = slope
             self.hz4r2 = hzr2
@@ -333,9 +326,9 @@ class skews():
         offset_arr = [(round(x, 6), round(y, 6)) for x, y in zip(Xi_arr, Yi_arr)]
         return offset_arr
 
-
     def meanMedianStd(self, diff_arr):
-        """calculates the median,mean and the standard deviation of the pair wise point distance array"""
+        """calculates the median,mean and the standard deviation
+        of the pair wise point distance array"""
 
         mad_lst = []  # median absolute deviation
         mean = np.mean(diff_arr)  # mean (average) of the set
@@ -353,7 +346,8 @@ class skews():
         return mean_threshhold, med_threshhold
 
     def calppd(self, den_arr4, den_arr6):
-        """Calculate the pairwise point distance between candicate offset values for IPv4 and IPv6 and returns the absolute
+        """Calculate the pairwise point distance between candicate offset
+        values for IPv4 and IPv6 and returns the absolute
         pairwise point distance array."""
 
         v4_X, v4_Y = zip(*den_arr4)
@@ -428,7 +422,7 @@ class skews():
     def calAlpha(self, offset_arr):
         """Calculates the slope (alpha) of the offset points which is the relative clock skew ratio"""
 
-        time_start =time.time()
+        #time_start =time.time()
         x_arr, y_arr = zip(*offset_arr)
         r_value = stats.linregress(x_arr, y_arr)[2]
         try:
@@ -649,7 +643,7 @@ def plot(pp, index, host, arr4, arr6, spl_arr4=None, spl_arr6=None, xs4=None, xs
 def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
              rng_diff, spl_diff_85, dataset=None):
     """ decison algorithm """
-    passed = False
+    #passed = False
     validslope_metric = 0.81  # linear slopes obtained by r values and plots (r value of 0.9 or greater)
     rsqr_diff_metric = 0.2
     neglig_skew_metric = 1.5  # obtained from the plots
@@ -661,89 +655,53 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
     final_dec = ""
     # dataset: if sib or non-sib, tp/fp calculations are available
 
-    global false_pos
-    global false_neg
-    global neg_skew
+    #global false_pos
+    #global false_neg
+    #global neg_skew
     global val_slp
     global ott_rng_unk
     #global mixd_unk
     global ott_rng_elm
-    global mixd_elm
-    global const_skew
-    global true_pos
-    global true_neg
+#    global const_skew
+    #global true_pos
+    #global true_neg
 
     # r_square test
     # signif rsquare with different signs
     if (r4_square >= validslope_metric and r6_square >= validslope_metric) and ((a4 < 0 and a6 > 0) or (a4 > 0 and a6 < 0)):
-        const_skew += 1
+        #const_skew += 1
         final_dec += "non-sibling(slope sign mismatch)"
-        # if dataset == "sib":
-        #    false_neg += 1
-        # elif dataset == "non-sib":
-        #    true_neg += 1
 
     # significant rsquare with same slope sign and small slope diff or else continue to the next step (and not clasify and non-siblings)
     elif (r4_square >= validslope_metric and r6_square >= validslope_metric) and (np.sign(a4) == np.sign(a6)) and (abs(a4 - a6) <= slope_diff_metric):
-        const_skew += 1
+        #const_skew += 1
         final_dec += "sibling(valid slope/small slope diff)"
-        #if dataset == "non-sib":
-        #    false_pos += 1
-        #elif dataset == "sib":
-        #    true_pos += 1
-        val_slp += 1
+        #val_slp += 1
 
     # for detecting one linear skew trend and avoiding borderline cases
     elif ((r4_square >= validslope_metric and r6_square < validslope_metric) or (r4_square <= validslope_metric and r6_square > validslope_metric)) and \
             abs(r4_square - r6_square) > rsqr_diff_metric:
         final_dec += "non-sibling(big rsqr deviation)"
-        #if dataset == "sib":
-        #    false_neg += 1
-        #elif dataset == "non-sib":
-        #    true_neg += 1
 
     # ott range test
     elif rng4 <= neglig_skew_metric and rng6 <= neglig_skew_metric:  # both curves with small ranges
         final_dec += "no skew(unknown)"
-        # neg_skew += 1
-        # ott_rng_unk += 1
-        # if not passed:
-        #    mixd_unk += 1
+
 
     # ott range delta
     elif ((rng4 <= neglig_skew_metric and rng6 > neglig_skew_metric) or (rng6 <= neglig_skew_metric and rng4 > neglig_skew_metric)) \
             and rng_diff > ott_rng_diff_metric:  # one curve with a small range
         final_dec += "non-sibling(one negligible and ott diff delta too large)"  # to catch the borderline cases of one significant skew
-        # if dataset == "sib":
-        #    false_neg += 1
-        # elif dataset == "non-sib":
-        #    true_neg += 1
-
-        #ott_rng_elm += 1
-        #if not passed:
-        #    mixd_elm += 1
 
     # spline diff test
     elif spl_diff_85 <= spline_diff_metric:
         final_dec += "sibling(spline test)"
-        #if dataset == "non-sib":
-        #    false_pos += 1
-        #elif dataset == "sib":
-        #    true_pos += 1
 
     elif (rng4 > large_ott_rng and rng6 > large_ott_rng) and (spl_diff_85 <= spline_diff_ldynam_metric):
         final_dec += "sibling(spline test)bigrng"
-        #if dataset == "non-sib":
-        #    false_pos += 1
-        #elif dataset == "sib":
-        #    true_pos += 1
 
     else:
         final_dec += "non-sibling(spline test)"
-        # if dataset == "sib":
-        #    false_neg += 1
-        # elif dataset == "non-sib":
-        #    true_neg += 1
 
     return final_dec
 
@@ -795,9 +753,9 @@ def binEqual(offsets):
 
     return bin_size
 
-
+"""
 def polyreg(first, second, third):
-    """polynomial regression on x equal pieces of the offset trend"""
+    NOT USED ? polynomial regression on x equal pieces of the offset trend
 
     x1, y1 = zip(*first)
     x2, y2 = zip(*second)
@@ -808,6 +766,7 @@ def polyreg(first, second, third):
     co3 = np.polyfit(x3, y3, 3)
 
     return co1, co2, co3
+"""
 
 
 def spline(bin_size, offsets):
@@ -833,8 +792,9 @@ def spline(bin_size, offsets):
     return orig_curve, deriv_curve, xs
 
 
+"""
 def splineDist(y1, y2):
-    """Evaluate the corridor of the v4 and v6 splines"""
+    NOT USED ? Evaluate the corridor of the v4 and v6 splines
     a = y1
     b = y2
     # non-equivalent sizes
@@ -853,6 +813,7 @@ def splineDist(y1, y2):
     std_med = consis_const * np.median(mad_lst)  # median absolute deviation*cosis_cons = standard deviation from the median of a set
 
     return diff_arr, median, std_med
+"""
 
 
 def mapCurve(cln_4, cln_6):
@@ -907,7 +868,7 @@ def loadts(args):
     # writing and reading pickle are both about 10x faster than reading csv
     # hence, simplify repeated execs by providing pickle file
     time_before = time.time()
-    timestart=time.time()
+    #timestart = time.time()
     d = dict()  # dictionary of numpy arrays that hold timestamps per IP
     p = dict()  # dictionary of IPs, holding # timestamps per IP
     offset = dict()  # dict to hold tsval offset per IP
@@ -993,7 +954,7 @@ def loadsc(args, d, p, offset, tasks, results, opts, writer):
     scc = 0
     count = 0
     fc = 0
-    siblingcands = dict()
+    #siblingcands = dict()
     decisioncache = dict()
 
     with open(args.scfile) as scfile:  # iterate through sibling cands
@@ -1039,7 +1000,7 @@ def loadsc(args, d, p, offset, tasks, results, opts, writer):
             d[ip6].resize((p[ip6], 2))
             np6 = d[ip6]
             offset6 = offset[ip6]
-            time_after = time.time()
+            #time_after = time.time()
             logging.debug("array sizes for "+str(domain)+" : "+str(ip4)+","+str(np4.size)+","+str(ip6)+","+str(np6.size))
             if np4.size < 100 or np6.size < 100:
                 logging.debug("arry sizes too small, skipping!")
