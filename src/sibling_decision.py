@@ -129,11 +129,21 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
         logging.error("calcsib: processTrace2 indicates error, exiting for domain {}".format(s.domain))
         return s
     # check that Hz are similar
+    try:
+        hzdiff = abs(s.hz4-s.hz6)
+    except:
+        logging.error("Cannot calculate hzdiff for domain {}".format(self.domain))
+        hzdiff = "ERROR"
     if abs(s.hz4 - s.hz6) > 0.1:
         logging.warning("calcsib: hz different for domain {}, hz4 {}, hz6 {}".format(s.domain, s.hz4, s.hz6))
         s.dec = "non-sibling (hz different)"
         return s
-        # TODO - take non-sibling decision here!
+
+    try:
+        hzr2diff = abs(s.hz4r2-s.hz6r2)
+    except:
+        logging.error("Cannot calculate hzr2diff for domain {}".format(self.domain))
+        hzdiff = "ERROR"
 
     # check how close raw tcp ts values are
     td_tcpt = (s.tcp_t_offset6 - s.tcp_t_offset4)/np.mean([s.hz4, s.hz6]) # time distance between initial tcp timestamp v4/v6 in seconds
@@ -172,6 +182,19 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     # calculate alpha
     s.a4, ignore, ignore, s.r4_sqr = s.calAlpha(cln_4)
     s.a6, ignore, ignore, s.r6_sqr = s.calAlpha(cln_6)
+
+    try:
+        s.adiff = abs(s.a4 - s.a6)
+    except Exception as e:
+        logging.error("Failed to calculcate adiff for domain {} with exception {}".format(self.domain, e))
+        s.adiff = "ERROR"
+
+    try:
+        s.r2diff = abs(s.r4_sqr - s.r6_sqr)
+    except:
+        logging.error("Failed to calculcate r2diff for domain {}".format(self.domain))
+        s.r2diff = "ERROR"
+
 
     # prune otts two and half perc above and down
     sorted_pruned_otts4 = s.pruneOTTS(cln_4)
@@ -255,6 +278,8 @@ class skews():
     dec = None
     ott_rng_diff_rel = None
     opts4, opts6, optsdiff = None, None, None
+    hzdiff, hzr2diff, adiff, r2diff = None, None, None, None
+
 
     def calHertz(self, rcv_t, tcp_t, ver):
         """ From rec_t and tcp_t, calculate Hertz of remote clock
@@ -268,10 +293,10 @@ class skews():
         Xi_arr = np.zeros(count-1)
         Vi_arr = np.zeros(count-1)
 
-        adjustment=0
+        adjustment = 0
         for i in range(1, count-1):
-            #xi = rcv_t[i] - rcv_t[0]
-            xi = rcv_t[i] # rcv_t is alreay zero-based
+            # xi = rcv_t[i] - rcv_t[0]
+            xi = rcv_t[i]  # rcv_t is alreay zero-based
             if (tcp_t[i] + 1000) < tcp_t[i-1]: # non-monotonic, likely wrap-around. 1000 as safety margin to allow for e.g. packet reordering. 1000 TS ticks will typically range from 1 to 10 seconds
                 if tcp_t[i-1] > 2**31:
                     logging.warning("calHertz: fixing likely tcp ts wrap-around for domain {} for timestamps {} and {}".format(
@@ -443,16 +468,16 @@ class skews():
         hz, Xi_arr, Vi_arr = self.calHertz(recv_t, tcp_t, ver)
         if abs(hz) < 1:
             logging.warning("processTrace2: abs(hz) < 1 for domain {}".format(self.domain))
-            self.dec = "error: <1hz"
+            self.dec = "ERROR: <1hz"
             return None, None, True
         if (ver == 4 and self.hz4r2 < 0.9) or (ver == 6 and self.hz6r2 < 0.9):
             logging.warning("processTrace2: too low r-squared for fitting clock skew, failing. domain {}, r^2: v4 {} and v6 {}".format(self.domain, self.hz4r2, self.hz6r2))
-            self.dec = "non-sibling: too small clock hertz r-squares"
+            self.dec = "ERROR: too small clock hertz r-squares"
             return None, None, True
         offset_arr = self.calOffsets(Xi_arr, Vi_arr, hz)
         if offset_arr is None:
             logging.error("offset_arr empty!")
-            self.dec = "error: empty offset_arr"
+            self.dec = "ERROR: empty offset_arr"
             return None, None, True
 
         denoised_arr = self.denoise(offset_arr)
@@ -463,7 +488,8 @@ class skews():
         return offset_arr, denoised_arr, False
 
     def delOutliers(self, mean_thresh, den_arr4, den_arr6, idx6_arr, ppd_arr):
-        """Deletes the outliers that stand two standard deviation away from the mean, the result will be used
+        """Deletes the outliers that stand two standard deviation away from
+        the mean, the result will be used
         as another level of cleaning up the graph."""
         cln4 = []
         cln6 = []
@@ -516,11 +542,6 @@ class skews():
                 ret_arr.append(o)
 
         return ret_arr
-
-"""
-def timeStamp(writer):
-    writer.writerow(["File creation time: " + time.ctime()])
-"""
 
 
 def plotclassfrompickle(tsfile, mode=None):
@@ -741,13 +762,22 @@ def decision(r4_square, r6_square, theta, a4, a6, ppd_corrid, rng4, rng6,
 
     return final_dec
 
+
 def writefromclass(s, writer):
-    writer.writerow([s.domain, s.ip4, s.ip6,
-                    s.a4, s.hz4, s.tcp_t_offset4, s.hz4r2, s.r4_sqr,
-                    s.a6, s.hz6, s.tcp_t_offset6, s.hz6r2, s.r6_sqr,
-                    s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.ott_rng_diff_rel,
-                    abs(s.hz4-s.hz6), s.perc_85_val, s.timestamps_diff,
-                    s.opts4, s.opts6, s.optsdiff, s.dec])
+    try:
+        writer.writerow([s.domain, s.ip4, s.ip6,
+                        s.hz4, s.hz6, s.hzdiff,
+                        s.hz4r2, s.hz6r2, s.hzr2diff,
+                        s.tcp_t_offset4, s.tcp_t_offset6, s.timestamps_diff,
+                        s.a4, s.a6, s.adiff,
+                        s.r4_sqr, s.r6_sqr, s.r2diff,
+                        s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.ott_rng_diff_rel,
+                        s.opts4, s.opts6, s.optsdiff,
+                        s.perc_85_val, s.dec])
+    except Exception as e:
+        writer.writerow([s.domain, s.ip4, s.ip6])
+        print("ERROR: Printing output for domain {} failed with error {}".format(s.domain, e))
+        logging.debug("ERROR: Printing output for domain {} failed with error {}".format(s.domain, e))
 
 
 def startwriter(args):
@@ -760,14 +790,15 @@ def startwriter(args):
     # to exportData fucntion for further writing.
     fd = open(csv_path_abs, "a")
     writer = csv.writer(fd)
-    writer.writerow(
-        ["domain", "ip4", "ip6",
-         "alpha4", "hz4", "tcp_t_offset4", "hz4r2", "r_square4",
-         "alpha6", "hz6", "tcp_t_offset6", "hz6r2", "r_square6",
-         "ott4_range", "ott6_range", "ott_rng_diff", "ott_rng_diff_rel",
-         "hzdiff", "85perc_mapped_diff", "timestamps_diff",
-         "tcpopts4", "tcpopts6", "tcpoptsdiff", "decision"])
-
+    writer.writerow(["domain", "ip4", "ip6",
+                     "hz4", "hz6", "hzdiff",
+                     "hz4r2", "hz6r2", "hzr2diff",
+                     "tcp_t_offset4", "tcp_t_offset6", "timestamps_diff",
+                     "a4", "a6", "adiff",
+                     "r4_sqr", "r6_sqr", "r2diff",
+                     "ott4_rng", "ott6_rng", "ott_rng_diff", "ott_rng_diff_rel",
+                     "opts4", "opts6", "optsdiff",
+                     "perc_85_val", "decision"])
     return writer, None, fd, csv_path_abs, None
 
 
@@ -865,14 +896,15 @@ def mapCurve(cln_4, cln_6):
         curve = "4"
     return zip(x_mapped, y_mapped), abs(mean_diff), curve
 
+
 def argprs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--scfile', action="store", dest="scfile",
                         help='the sibling candidate file, typically the '
                         'hitlist used for scanning')
-    parser.add_argument('-t', '--tsfile',  action="store", dest="tsfile",
+    parser.add_argument('-t', '--tsfile', action="store", dest="tsfile",
                         help='the timestamps csv file')
-    parser.add_argument('-o', '--tcpoptsfile',  action="store", dest="optsfile",
+    parser.add_argument('-o', '--tcpoptsfile', action="store", dest="optsfile",
                         help='the file with TCP options')
     parser.add_argument('--plot', dest='mode', action='store_const',
                         const="plot", default="sibling",
@@ -880,8 +912,8 @@ def argprs():
 
     args = parser.parse_args()
     args.tsp, args.tsf = os.path.split(args.tsfile)
-    logging.debug("args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
-        args.scfile, args.tsfile, args.optsfile, args.mode))
+    # logging.debug("args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
+    #    args.scfile, args.tsfile, args.optsfile, args.mode))
     return args
 
 
@@ -1075,6 +1107,7 @@ def loadtcpopts(args):
         d = pickle.load(pklfile)
         pklfile.close()
     except:
+        d = dict()
         with open(args.optsfile) as csvfile:  # iterate through sibling cands
             csvreader = csv.reader(csvfile)
             for row in csvreader:
@@ -1096,6 +1129,13 @@ def loadtcpopts(args):
 
 def main():
     args = argprs()  # parse arguments
+    format = '%(asctime)s - %(levelname)-7s - %(message)s'
+    logging.basicConfig(filename=args.scfile+args.tsf + '.decisionlog.log',
+                        level=logging.DEBUG, format=format, filemode='w')
+    logging.debug(
+        "args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
+         args.scfile, args.tsfile, args.optsfile, args.mode))
+
     if args.mode == "plot":
         print("plotting...")
         plotclassfrompickle(args.scfile+args.tsf, "siblings")
@@ -1107,14 +1147,11 @@ def main():
         sys.exit(1)
 
     writer, ignore, fd, csv_path_abs, logfile = startwriter(args)
-    format = '%(asctime)s - %(levelname)-7s - %(message)s'
-    logging.basicConfig(filename=args.scfile+args.tsf + '-decisionlog.log',
-                        level=logging.DEBUG, format=format, filemode='w')
 
     d, p, offset = loadts(args)
-    tasks, results, consumers = startmp()
-
     opts = loadtcpopts(args)
+
+    tasks, results, consumers = startmp()
     loadsc(args, d, p, offset, tasks, results, opts, writer)
 
     # tasks.join() can sometimes block to inifinity - work around
