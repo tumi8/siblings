@@ -956,7 +956,7 @@ def loadsc(args, d, p, offset, tasks, results, opts, writer):
 
             logging.debug("calling calcsib on {} , {}, {}".format(
                 domain, ip4, ip6))
-            print("+", end="")
+            # print("+", end="")
             tasks.put(rl_calcsib(np4, offset4, np6, offset6, opts[ip4], opts[ip6], domain, ip4, ip6))
             scc += 1
             # continuously take results off the output queue to keep it small
@@ -1074,12 +1074,12 @@ def main():
 
     # this may cause an memory error for large files
     # pklfileres = open(args.scfile + args.tsf + ".resultspickle", 'wb')
-    with open(args.scfile + args.tsf + ".resultspickle", 'wb') as pklfileres:
-        try:
-            pickle.dump(objectscache, pklfileres, protocol=4)
-        except MemoryError as e:
-            print("Pickling failed due to memory error {}".format(e), file=os.stderr)
-            logging.error("Pickling failed due to memory error {}".format(e))
+    # with open(args.scfile + args.tsf + ".resultspickle", 'wb') as pklfileres:
+    #    try:
+    #        pickle.dump(objectscache, pklfileres, protocol=4)
+    #    except MemoryError as e:
+    #        print("Pickling failed due to memory error {}".format(e), file=sys.stderr)
+    #        logging.error("Pickling failed due to memory error {}".format(e))
     # pklfileres.close()
     print("Decision file: {}".format(
         args.scfile + args.tsf + ".siblingresult.csv"))
