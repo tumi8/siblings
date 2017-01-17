@@ -6,6 +6,7 @@ Exports result as a .pcap file by calling tcpdump.
 Concept is to create a number of processes, which in turn fire up thousands
 of threads. These conduct the measurements.
 Threads receive measurement jobs via a queue.
+# flake8: ignore=E501
 '''
 import sys
 import subprocess as sp
@@ -15,7 +16,7 @@ from threading import Thread
 import csv
 import socket
 import urllib3
-from multiprocessing import Process
+from multiprocessing import Process  # noqa: F401 (module needed, but use not picked up)
 import concurrent.futures
 import multiprocessing
 import string
@@ -45,7 +46,7 @@ def start_capture():
     tcpdumpprocesslocal = sp.Popen(['/usr/sbin/tcpdump', '-ni', capture_if, 'tcp', '-w', pcapfile], stdout=f_tcpdump, stderr=f_tcpdump)
     time.sleep(2)  # to allow for tcpdump startup before sending first packet
     returncode = tcpdumpprocesslocal.poll()
-    if(returncode):
+    if returncode:
         sys.stderr.write("tcpdump failed!\n")
         sys.exit()
     return tcpdumpprocesslocal
@@ -232,13 +233,13 @@ def main(argv):
             # for i in row[1:]: # this is for reading format domain,ip6,ip4
             logging.debug("DEBUG: row len is {}, row: {}".format(len(row), row))
             # this reads a line format of RA_6211;109.70.107.25;2001:4130:107::25;80;ripeatlas
-            if(len(row) == 5):
-                # hn = row[0]  # hostname not currently used
+            if len(row) == 5:
+                hn = row[0]  # hostname not currently used # noqa: F841
                 ip4 = row[1]
                 ip6 = row[2]
                 port = row[3]
-                if(sys.platform != "darwin"):  # function is not implemented on macOS
-                    while(tasks.qsize() > num_consumers):
+                if sys.platform != "darwin":  # function is not implemented on macOS
+                    while tasks.qsize() > num_consumers:
                         time.sleep(0.0001)  # sleep a bit to avoid flooding the queue
                 logging.debug("feeding IPs+Port into task queue: {} {} {}".format(ip4, ip6, port))
                 assert 0 < int(port) < 2**16
@@ -251,8 +252,8 @@ def main(argv):
             else:
                 for i in row:  # this is for format <ip,>*n (ip1, ip2, ip3)
                     if i:
-                        if(sys.platform != "darwin"):  # function is not implemented on macOS
-                            while(tasks.qsize() > num_consumers):
+                        if sys.platform != "darwin":  # function is not implemented on macOS
+                            while tasks.qsize() > num_consumers:
                                 time.sleep(0.0001)  # sleep a bit to avoid flooding the queue
                         logging.debug("feeding IP into task queue: " + str(i))
                         if not dryrun:
