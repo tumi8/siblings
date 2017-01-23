@@ -22,6 +22,15 @@ import multiprocessing  # import Process
 from collections import Counter
 import logging
 import argparse
+import traceback
+import warnings
+
+
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    traceback.print_stack()
+    # log = file if hasattr(file, 'write') else sys.stderr
+    sys.stderr.write(warnings.formatwarning(message, category, filename, lineno, line))
+    logging.error(warnings.formatwarning(message, category, filename, lineno, line))
 
 
 # mixd_unk = 0  # actually used
@@ -147,14 +156,14 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     s.timestamps_diff = abs(td_tcpt - td_rcvt)  # difference in tcp ts in seconds
 
     # mean remover (second level denoising)
-    if den_arr4 is None:
+    if den_arr4 is None or len(den_arr4) == 0:
         s.dec = "ERROR: den_arr4 empty!"
         s.dec_bev = "error: den_arr4 empty!"
         return s
     else:
         s.mean_cln_4 = s.meanRemover(den_arr4)
 
-    if den_arr6 is None:
+    if den_arr6 is None or len(den_arr6) == 0:
         s.dec = "ERROR: den_arr6 empty!"
         s.dec_bev = "error: den_arr6 empty!"
         return s
@@ -162,7 +171,20 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
         s.mean_cln_6 = s.meanRemover(den_arr6)
 
     # cal ppd
+    if not s.mean_cln_4 or not s.mean_cln_6:
+        s.dec = "ERROR: mean_cln not set!"
+        s.dec_bev = "ERROR: mean_cln not set!"
+        return s
+    if len(s.mean_cln_4) == 0 or len(s.mean_cln_6) == 0:
+        s.dec = "ERROR: mean_cln empty!"
+        s.dec_bev = "ERROR: mean_cln empty!"
+        return s
+
     ppd_arr, idx6_arr, rng = s.calppd(s.mean_cln_4, s.mean_cln_6)  # uses candidate points
+    if len(ppd_arr) == 0 or len(idx6_arr) == 0 or not rng:
+        s.dec = "ERROR: calppd failed!"
+        s.dec_bev = "ERROR: calppd failed!"
+        return s
     ignore, med_thresh = s.meanMedianStd(ppd_arr)
 
     #  clean points that are two standard deviation from the median
@@ -200,8 +222,15 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     # eliminating first and last points to compute the spline
     packed4 = cln_4[8:-8]
     packed6 = cln_6[8:-8]
-    s.bin_size_4 = binEqual(packed4)
-    s.bin_size_6 = binEqual(packed6)
+    try:
+        s.bin_size_4 = binEqual(packed4)
+        s.bin_size_6 = binEqual(packed6)
+    except Exception as e:
+        logging.error("calcsib {} / {} / {} binEqual failed for \n packed4 {} \n packed6 {}".format(
+            s.domain, s.ip4, s.ip6, packed4, packed6))
+        s.dec = "ERROR: binEqual calculation failed!"
+        s.dec_bev = s.dec
+        return s
 
     # spline polynomial on [No] equal pieces of skew trend
     try:
@@ -361,10 +390,15 @@ class skews():
 
         np_6_X = np.array(v6_X)
         idx6_arr = []  # hold the indexes for the first for loop being the indexes for the closest IPv6 arrival times relative to every IPv4 arrival time
-        ppd_arr = []  # the absoulte pariwise-point distance array
+        ppd_arr = []  # the absoulte pairwise point distance array
 
         for idx in range(max_index):  # finding the closest arrival time for v6 being sj6(here index) to that of v4 si4(closest arrival time)
-            idx6 = np.abs(np_6_X - v4_X[idx]).argmin()
+            # WIP TODO: catch empty array case
+            try:
+                idx6 = np.abs(np_6_X - v4_X[idx]).argmin()
+            except ValueError as e:
+                logging.error("{}/{}/{}: calppd: ValueError at argmin -- returning empty array! error e {}".format(self.domain, self.ip4, self.ip6, e))
+                return [], [], None
             idx6_arr.append(idx6)
 
         for idx4 in range(max_index):  # getting the Y values for those pair of points and calculating the absolute pair-wise distance
@@ -374,7 +408,7 @@ class skews():
 
         glb_min = min(min(v4_Y), min(v6_Y))
         glb_max = max(max(v4_Y), max(v6_Y))
-        rng = abs(glb_min - glb_max)  # range between the smallest and greates value observed
+        rng = abs(glb_min - glb_max)  # range between the smallest and greatest value observed
 
         return ppd_arr, idx6_arr, rng
 
@@ -416,7 +450,11 @@ class skews():
                 all_otts.append(otts_per_h)
 
         for i in range(len(all_otts)):
-            idx = np.array(all_otts[i]).argmin()
+            try:
+                idx = np.array(all_otts[i]).argmin()
+            except ValueError as e:
+                logging.error("{}/{}/{}: denoise: ValueError at argmin -- returning empty array! offset_arr: {}, error e {}".format(self.domain, self.ip4, self.ip6, offset_arr, e))
+                return []
             min_per_probe = all_otts[i][idx]
             assoc_x_per_probe = all_times[i][idx]
             min_arr.append((assoc_x_per_probe, min_per_probe))
@@ -513,8 +551,15 @@ class skews():
     def meanRemover(self, offsets):
         """Getting the array of observed offsets, and the three sigma prunes outliers"""
         y_arr = [v for u, v in offsets]
-        mean = np.mean(y_arr)
-        std_mean = np.std(y_arr)
+        with np.errstate(invalid='raise'):
+            try:
+                mean = np.mean(y_arr)
+                std_mean = np.std(y_arr)  # this can create numpy warning for misformed arrays
+            except Exception as e:
+                logging.error("{}/{}/{}: meanRemover: Warning at mean/std -- error e {} \n offsets {}".format(
+                    self.domain, self.ip4, self.ip6, e, offsets))
+                sys.stderr.write("{}/{}/{}: meanRemover: Warning at mean/std -- error e {} \n offsets {} \n".format(
+                    self.domain, self.ip4, self.ip6, e, offsets))
         mean_threshhold = (mean - 2.17009 * std_mean, mean + 2.17009 * std_mean)  # 97 confidence interval
         ret_arr = []
         up = mean_threshhold[1]
@@ -530,6 +575,7 @@ def plotclassfrompickle(tsfile, mode=None):
     """ plot graphics from pickled cache """
     plot_name = os.path.abspath(tsfile + ".plots.pdf")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
+    # no try / except - just fail hard if file does not exist
     pklfile = open(tsfile + ".resultspickle", 'rb')
     d = pickle.load(pklfile)
     pklfile.close()
@@ -788,6 +834,9 @@ def argprs():
     #                    help='the timestamps csv file')
     # parser.add_argument('-o', '--tcpoptsfile', action="store", dest="optsfile",
     #                    help='the file with TCP options')
+    parser.add_argument('--resultspickle', dest="resultspickle", action="store_const",
+                        const=True, default=False,
+                        help="optional: store results as pickle (will fail for large files!)")
     parser.add_argument('--plot', dest='mode', action='store_const',
                         const="plot", default="sibling",
                         help='optional: create PDF with plots')
@@ -1013,12 +1062,14 @@ def loadtcpopts(args):
 
 def main():
     args = argprs()  # parse arguments
+    warnings.showwarning = warn_with_traceback
+    # warnings.simplefilter("always") # we only want to show warning once
     format = '%(asctime)s - %(levelname)-7s - %(message)s'
     logging.basicConfig(filename=args.scfile + args.tsf + '.decisionlog.log',
                         level=logging.DEBUG, format=format, filemode='w')
     logging.debug(
-        "args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {}".format(
-            args.scfile, args.tsfile, args.optsfile, args.mode))
+        "args: scfile = {}\ntsfile = {}\noptsfile = {}\nmode  = {} \nresultspickle = {}".format(
+            args.scfile, args.tsfile, args.optsfile, args.mode, args.resultspickle))
 
     if args.mode == "plot":
         print("plotting...")
@@ -1072,15 +1123,19 @@ def main():
     for w in consumers:
         w.terminate()
 
-    # this may cause an memory error for large files
-    # pklfileres = open(args.scfile + args.tsf + ".resultspickle", 'wb')
-    # with open(args.scfile + args.tsf + ".resultspickle", 'wb') as pklfileres:
-    #    try:
-    #        pickle.dump(objectscache, pklfileres, protocol=4)
-    #    except MemoryError as e:
-    #        print("Pickling failed due to memory error {}".format(e), file=sys.stderr)
-    #        logging.error("Pickling failed due to memory error {}".format(e))
-    # pklfileres.close()
+    if args.resultspickle:
+        logging.debug("pickling out results...")
+        # this may cause an memory error for large files
+        # pklfileres = open(args.scfile + args.tsf + ".resultspickle", 'wb')
+        with open(args.scfile + args.tsf + ".resultspickle", 'wb') as pklfileres:
+            try:
+                pickle.dump(objectscache, pklfileres, protocol=4)
+            except MemoryError as e:
+                print("Pickling failed due to memory error {}".format(e), file=sys.stderr)
+                logging.error("Pickling failed due to memory error {}".format(e))
+        # pklfileres.close()
+    else:
+        logging.debug("not writing out results pickle")
     print("Decision file: {}".format(
         args.scfile + args.tsf + ".siblingresult.csv"))
     print("Done, check log under {}".format(

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-import sys, csv
+import sys
+import csv
 import random
 
 arr = []
+
+# usage: argv1 = siblings-csv, argv2 = seed, argv3= numer of non-siblings
 
 with open(sys.argv[1], "r") as csvfile:
     datareader = csv.reader(csvfile)
@@ -33,12 +36,12 @@ fd = open(outfname, "w")
 ctr = 0
 
 for i in range(len(arr)):
-    for j in range(1, n+1):
-        if arr[i][0] != arr[(i+j) % len(arr)][0]:
+    for j in range(1, n + 1):
+        if arr[i][0] != arr[(i + j) % len(arr)][0]:
             line = "{}_+_{},{},{}".format(
-                arr[i][0], arr[(i+j) % len(arr)][0],
-                arr[i][1], arr[(i+j) % len(arr)][2])  # offset IPv6
-            fd.write(line+"\n")
+                arr[i][0], arr[(i + j) % len(arr)][0],
+                arr[i][1], arr[(i + j) % len(arr)][2])  # offset IPv6
+            fd.write(line + "\n")
             ctr += 1
 
 print("Written {} non-siblings of seed {} to file {}".format(ctr, seed, outfname))
