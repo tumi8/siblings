@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 
-<<<<<<< Updated upstream
 import sys
 import csv
-=======
-import sys, csv
->>>>>>> Stashed changes
 import random
 
 arr = []
 
-<<<<<<< Updated upstream
-# usage: argv1 = siblings-csv, argv2 = seed, argv3= numer of non-siblings
+# usage: argv1 = siblings-csv, argv2 = seed, argv3 = number of non-siblings
 
-=======
->>>>>>> Stashed changes
 with open(sys.argv[1], "r") as csvfile:
     datareader = csv.reader(csvfile)
     count = 0
@@ -43,21 +36,12 @@ fd = open(outfname, "w")
 ctr = 0
 
 for i in range(len(arr)):
-<<<<<<< Updated upstream
     for j in range(1, n + 1):
         if arr[i][0] != arr[(i + j) % len(arr)][0]:
             line = "{}_+_{},{},{}".format(
                 arr[i][0], arr[(i + j) % len(arr)][0],
                 arr[i][1], arr[(i + j) % len(arr)][2])  # offset IPv6
             fd.write(line + "\n")
-=======
-    for j in range(1, n+1):
-        if arr[i][0] != arr[(i+j) % len(arr)][0]:
-            line = "{}_+_{},{},{}".format(
-                arr[i][0], arr[(i+j) % len(arr)][0],
-                arr[i][1], arr[(i+j) % len(arr)][2])  # offset IPv6
-            fd.write(line+"\n")
->>>>>>> Stashed changes
             ctr += 1
 
 print("Written {} non-siblings of seed {} to file {}".format(ctr, seed, outfname))
