@@ -584,7 +584,10 @@ class skews():
 def plotclassfrompickle(tsfile, mode=None):
     """ plot graphics from pickled cache """
     plot_name = os.path.abspath(tsfile + ".plots.pdf")
-    plot_name_tikz = os.path.abspath(tsfile + ".plots.tex")
+    tikzdir = os.path.basename(tsfile) + "tikz/"
+    if not os.path.exists(tikzdir):
+        os.makedirs(tikzdir)
+    plot_name_tikz = os.path.abspath(tikzdir + "/plots_tex")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
     # no try / except - just fail hard if file does not exist
     pklfile = open(tsfile + ".resultspickle", 'rb')
@@ -612,14 +615,14 @@ def plotclass_pdf(pp, s, t=None):
         ax1.plot(X6, Y6, 'bo', color="red", alpha=0.4, label="IPv6")
     except Exception as e:
         print("Plotting failed for host {} with error {}".format(s.domain, e))
-        pass
+        return
 
     try:
         ax1.plot(s.xs4, s.spl_arr4, linewidth=4, color="blue", alpha=0.4)
         ax1.plot(s.xs6, s.spl_arr6, linewidth=4, color="red", alpha=0.4)
     except Exception as e:
         print("Not plotting host {} due to exception {}".format(s.domain, e))
-        pass
+        return
 
     plt.legend(loc='lower right')
     plt.title('Host: {} ({} / {})\n Decision: {}'.format(
@@ -631,7 +634,7 @@ def plotclass_pdf(pp, s, t=None):
     ax1.set_xticklabels(ticks)
     # saving all in PDF
     pp.savefig(fig)
-    tikz_save(t)
+    tikz_save("{}.{}-{}.tex}".format(t, s.domain, hash((s.ip4, s.ip6))))
     plt.close(fig)
 
 
