@@ -24,6 +24,7 @@ import logging
 import argparse
 import traceback
 import warnings
+from matplotlib2tikz import save as tikz_save  # for saving plots as tikz
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -139,6 +140,7 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
         logging.warning("calcsib: hz different for domain {}, hz4 {}, hz6 {}".format(s.domain, s.hz4, s.hz6))
         s.dec = "non-sibling (hz different)"
         s.dec_bev = "non-sibling (hz different)"
+        s.dec_ml1 = "non-sibling (hz different)"
         return s
 
     try:
@@ -158,14 +160,16 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     # mean remover (second level denoising)
     if den_arr4 is None or len(den_arr4) == 0:
         s.dec = "ERROR: den_arr4 empty!"
-        s.dec_bev = "error: den_arr4 empty!"
+        s.dec_bev = "ERROR: den_arr4 empty!"
+        s.dec_ml1 = "ERROR: den_arr4 empty!"
         return s
     else:
         s.mean_cln_4 = s.meanRemover(den_arr4)
 
     if den_arr6 is None or len(den_arr6) == 0:
         s.dec = "ERROR: den_arr6 empty!"
-        s.dec_bev = "error: den_arr6 empty!"
+        s.dec_bev = "ERROR: den_arr6 empty!"
+        s.dec_ml1 = "ERROR: den_arr6 empty!"
         return s
     else:
         s.mean_cln_6 = s.meanRemover(den_arr6)
@@ -174,16 +178,19 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     if not s.mean_cln_4 or not s.mean_cln_6:
         s.dec = "ERROR: mean_cln not set!"
         s.dec_bev = "ERROR: mean_cln not set!"
+        s.dec_ml1 = "ERROR: mean_cln not set!"
         return s
     if len(s.mean_cln_4) == 0 or len(s.mean_cln_6) == 0:
         s.dec = "ERROR: mean_cln empty!"
         s.dec_bev = "ERROR: mean_cln empty!"
+        s.dec_ml1 = "ERROR: mean_cln empty!"
         return s
 
     ppd_arr, idx6_arr, rng = s.calppd(s.mean_cln_4, s.mean_cln_6)  # uses candidate points
     if len(ppd_arr) == 0 or len(idx6_arr) == 0 or not rng:
         s.dec = "ERROR: calppd failed!"
         s.dec_bev = "ERROR: calppd failed!"
+        s.dec_ml1 = "ERROR: calppd failed!"
         return s
     ignore, med_thresh = s.meanMedianStd(ppd_arr)
 
@@ -241,6 +248,8 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
     except Exception as e:
         logging.error("calcsib spline exception: {}, parameters: s.bin_size_4 {} \n packed4 {} \ns.bin_size_6 {}\n packed6 {}\n".format(e, s.bin_size_4, packed4, s.bin_size_6, packed6))
         s.dec = "ERROR: spline calculation failed!"
+        s.dec_bev = s.dec
+        s.dec_ml1 = s.dec
         return s
 
     mapped_diff = []  # diff between one curve and its mapped ones
@@ -277,6 +286,7 @@ def calcsib(np4, offset4in, np6, offset6in, opts4, opts6, domain, ip4, ip6):
                      s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.perc_85_val,
                      s.timestamps_diff, s.hzdiff)
     s.dec_bev = decision_beverly(s.optsdiff, s.theta)
+    s.dec_ml1 = decision_ml1(s.optsdiff, s.hzdiff, s.timestamps_diff)
     return s
 
 
@@ -574,6 +584,7 @@ class skews():
 def plotclassfrompickle(tsfile, mode=None):
     """ plot graphics from pickled cache """
     plot_name = os.path.abspath(tsfile + ".plots.pdf")
+    plot_name_tikz = os.path.abspath(tsfile + ".plots.tex")
     pp = PdfPages(plot_name)  # opening a multipage file to save all the plots
     # no try / except - just fail hard if file does not exist
     pklfile = open(tsfile + ".resultspickle", 'rb')
@@ -583,13 +594,13 @@ def plotclassfrompickle(tsfile, mode=None):
     ctr = 0
     for _, s in d.items():
         print("{} / {} plotting entry {}".format(ctr, count, s.domain))
-        plotclass(pp, s)
+        plotclass_pdf(pp, s, plot_name_tikz)
         ctr += 1
     pp.close()
     print("Plotted to file {}".format(tsfile + ".plots.pdf"))
 
 
-def plotclass(pp, s):
+def plotclass_pdf(pp, s, t=None):
     """ Plots the skew sets for a pair """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -620,6 +631,7 @@ def plotclass(pp, s):
     ax1.set_xticklabels(ticks)
     # saving all in PDF
     pp.savefig(fig)
+    tikz_save(t)
     plt.close(fig)
 
 
@@ -631,6 +643,20 @@ def decision_beverly(optsdiff, theta):
         return "sibling(tau)"
     else:
         return "non-sibling(tau)"
+
+
+def decision_ml1(optsdiff, hzdiff, timestamps_diff):
+    tsd_thresh = 0.2557  # learned from ML DT
+    if optsdiff:
+        return "non-sibling(optsdiff)"
+    elif hzdiff > 0:
+        return "non-sibling(hzdiff)"
+    elif timestamps_diff <= tsd_thresh:
+        return "sibling(tsdiff)"
+    elif timestamps_diff > tsd_thresh:
+        return "non-sibling(tsdiff)"
+    else:
+        return "unknown!"
 
 
 def decision(r4_square, r6_square, optsdiff, a4, a6, ppd_corrid, rng4, rng6,
@@ -732,7 +758,7 @@ def writefromclass(s, writer):
                         s.r4_sqr, s.r6_sqr, s.r2diff,
                         s.ott4_rng, s.ott6_rng, s.ott_rng_diff, s.ott_rng_diff_rel,
                         s.opts4, s.opts6, s.optsdiff,
-                        s.perc_85_val, s.dec_bev, s.dec])
+                        s.perc_85_val, s.dec_bev, s.dec, s.dec_ml1])
     except Exception as e:
         writer.writerow([s.domain, s.ip4, s.ip6])
         print("ERROR: Printing output for domain {} failed with error {}".format(s.domain, e))
@@ -757,7 +783,7 @@ def startwriter(args):
                      "r4_sqr", "r6_sqr", "r2diff",
                      "ott4_rng", "ott6_rng", "ott_rng_diff", "ott_rng_diff_rel",
                      "opts4", "opts6", "optsdiff",
-                     "perc_85_val", "dec_bev", "decision"])
+                     "perc_85_val", "dec_bev", "decision", "dec_ml1"])
     return writer, None, fd, csv_path_abs, None
 
 
