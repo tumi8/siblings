@@ -584,7 +584,8 @@ class skews():
 def plotclassfrompickle(tsfile, mode=None):
     """ plot graphics from pickled cache """
     plot_name = os.path.abspath(tsfile + ".plots.pdf")
-    tikzdir = os.path.basename(tsfile) + "tikz/"
+    tikzdir = os.path.dirname(tsfile) + "/tikz/"
+    # print("tikzdir: {}".format(tikzdir))
     if not os.path.exists(tikzdir):
         os.makedirs(tikzdir)
     plot_name_tikz = os.path.abspath(tikzdir + "/plots_tex")
@@ -634,7 +635,7 @@ def plotclass_pdf(pp, s, t=None):
     ax1.set_xticklabels(ticks)
     # saving all in PDF
     pp.savefig(fig)
-    tikz_save("{}.{}-{}.tex}".format(t, s.domain, hash((s.ip4, s.ip6))))
+    tikz_save("{}.{}-{}.tex".format(t, s.domain, hash((s.ip4, s.ip6))))
     plt.close(fig)
 
 
