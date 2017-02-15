@@ -1,4 +1,4 @@
-# Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew
+# Large-Scale Classification of IPv6-IPv4 Siblings with Variable Clock Skew
 
 This repository hosts data and code for our research paper 
 *Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew*.
