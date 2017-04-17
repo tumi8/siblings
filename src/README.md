@@ -5,7 +5,7 @@
 3. Optional: scan sibling candidates for open ports and TCP options (we used zmap)
 4. Optional: parse zmap output and create hitlists for measurement using `zmap-filter-siblings.lua`
 5. Optional: If remaining sibling candidates are too many for one run, split them using `siblingcands-split.lua` (junk size definable, we used 10k)
-6. Run the Timestamp measurement `measure_ts.py`. It takes IP addresses or sibling candidate lists as input and create a pcap file with the relevant packets.
+6. Run the Timestamp measurement `measure_ts.py`. It takes IP addresses or sibling candidate lists as input and creates a pcap file with the relevant packets.
 7. Now extract the timestamps from the pcap file. For performance reasons, this is done in C++, and requires compilation by typing `make`. Then run `extract_ts` and pipe its output to a .csv file.
 8. Now call `sibling_decision.py`, which takes the sibling/non-sibling decision based on the timestamps.
 
