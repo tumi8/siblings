@@ -1,7 +1,7 @@
 # Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew
 
 This repository hosts data and code for our research paper 
-*Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew*.
+*Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew* to appear at [TMA'17](http://tma.ifip.org/main-conference/). You can obtain a preprint from [arXiv](https://arxiv.org/abs/1610.07251).
 
 # Brief description 
 
