@@ -13,9 +13,27 @@ This code can, based on a set of associated A/AAAA DNS records, conduct TCP time
 # How to obtain our dataset
 
 The ground truth host list is included in this repository.
-The full ground truth and large scale datasets (including raw measurements) are hosted on our servers due to their size, please send us an [email](mailto:data-request@net.in.tum.de?subject=Access%20to%20large%20scale%20sibling%20data&body=Hi,%0A%0A%20please%20grant%20me%20access%20to%20the%20large%20scale%20sibling%20data%20set.%0A%20My%20affiliation%20is%20CHANGEME%20and%20I%20want%20to%20use%20the%20data%20for%20CHANGEME.%20%0A%0AI%20have%20read%20and%20agree%20to%20the%20Acceptable%20Use%20Policy.%0A%0AThank%20you,%20kind%20regards).
+The full ground truth and large scale datasets (including raw measurements) are hosted on our servers due to their size. 
+By using it you agree to our Acceptable Use Policy (see below).
 
-We will provide data sets after registration and agreement to our Acceptable Use Policy (see below).   
+The data can be found under FIXME.
+
+It is structured as follows:
+
+* `gt-$date` folders contain different measurement runs against our ground truth
+* `gt{1..7}` folders contain evaluations against various ground truth measurements runs -- these folders are accessed by 
+* `algo-eval` contains files used for the evaluation of our hand-tuned algorithm
+* `ls` contains hitlist, measurements, and evaluation of our large-scale measurements
+
+All files above 10M are compressed using .xz. Common file types are:
+
+* .pcap -- raw pcap capture of our measurement run
+* .pcap.opts -- extracted TCP options per host from .pcap
+* .pcap.ts -- extracted TCP timestamps per host from .pcap
+* .decisionlog.log -- meta-data log when creating sibling decisions
+* .siblingresult.csv -- output of sibling decision process
+
+Other common files are target lists (hosts.csv), mixed non-sibling lists (__nonsibling), tikz figures (.tikz), and various other log or processing files.
 
 # How to use our code
 
@@ -48,16 +66,10 @@ Also, code and functionality improvements are highly welcome!
 
 ### Acceptabe Use Policy
 
-1. Please do not further distribute data and take appropriate measures against access by others.
-2. You may only access the data to conduct research in the context of Sibling analysis. For further research, please contact us regarding authorization.
-
-We use the gathered data for statistical purposes and might very occasionally send a survey or other requests for feedback.
+You may only access the data to conduct research in the context of Sibling analysis. For further research, please contact us regarding authorization.
 
 
-
-## Details
-
-### extract_ts
+### Details on timestamp extraction
 
 Several options proved unable to process large (15GB) pcap files in reasonable (<15min) time:
 
