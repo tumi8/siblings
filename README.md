@@ -27,6 +27,10 @@ We will provide data sets after registration and agreement to our Acceptable Use
 6. Run the timestamp measurement `measure_ts.py`. It takes IP addresses or sibling candidate lists as input and creates a pcap file with the relevant packets.
 7. Now extract the timestamps from the pcap file. For performance reasons, this is done in C++, and requires compilation by typing `make`. Then run `extract_ts` and pipe its output to a .csv file. Confer section Details for a comparison of TS extraction options.
 8. Now call `sibling_decision.py`, which takes the sibling/non-sibling decision based on the timestamps.
+9. Under `source/eval`reside 3 jupyter notebooks: 
+	* `siblings_ml` is the generic notebook to train and test algorithms
+	* `algo-eval_used_version` is a notebook specific to fine-grained evaluation of the hand-tuned algorithm
+	* `ls_eval` is a notebook to apply various algorithms to the large-scale dataset
 
 # How to contribute
 
