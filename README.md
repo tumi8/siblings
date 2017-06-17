@@ -16,7 +16,7 @@ The ground truth host list is included in this repository.
 The full ground truth and large scale datasets (including raw measurements) are hosted on our servers due to their size. 
 By using it you agree to our Acceptable Use Policy (see below).
 
-The data can be found under FIXME.
+The full dataset is long-term and version-proof hosted by the [TUM Library](https://mediatum.ub.tum.de/1359164).
 
 It is structured as follows:
 
