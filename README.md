@@ -3,6 +3,8 @@
 This repository hosts data and code for our research paper 
 *Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew* to appear at [TMA'17](http://tma.ifip.org/main-conference/). You can obtain a preprint from [arXiv](https://arxiv.org/abs/1610.07251).
 
+The developments in the *passive_detection* folder have happened past the TMA submission, checkout commit f2de1e9 to get the TMA version without additions.
+
 # Brief description 
 
 This code can, based on a set of associated A/AAAA DNS records, conduct TCP timestamp measurements and measure the clock skew of remote hosts. Based on this clock skew, it can discern whether a set of IPv4/IPv6 addresses is hosted on the same machine (siblings) or not (non-siblings). Our code also works on nonlinear clock skew using spline fitting:
