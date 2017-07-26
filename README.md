@@ -1,9 +1,12 @@
 # Large-Scale Classification of IPv6-IPv4 Siblings with Variable Clock Skew
 
 This repository hosts data and code for our research paper 
-*Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew* to appear at [TMA'17](http://tma.ifip.org/main-conference/). You can obtain a preprint from [arXiv](https://arxiv.org/abs/1610.07251).
+*Large-Scale Classification of IPv4-IPv6 Siblings with Nonlinear Clock Skew* presented at [TMA'17](http://tma.ifip.org/main-conference/). You can obtain a preprint from [arXiv](https://arxiv.org/abs/1610.07251), and slides, data, talk recording and more from [our website](https://net.in.tum.de/projects/gino/)
 
-The developments in the *passive_detection* folder have happened past the TMA submission, checkout commit f2de1e9 to get the TMA version without additions.
+**News:** 
+
+* 2017-07: We have developed a tool that allows sibling classification based on passive observations only and on few datapoints (5-6 TCP Timestamp packets). It is contained under the folder *passive_detection*. 
+* 2017-06: Linux Kernel 4.10 will introduce randomized timestamps. Our TMA slides discuss this and its implications.
 
 # Brief description 
 

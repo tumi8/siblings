@@ -1,6 +1,9 @@
 ## Description
-This is our tool for IP sibling identification from passive traffic measurements.<br>
+This is our tool for IP sibling identification from passive traffic measurements.  
+
 In our evaluation, we achieved results ranging from 0.9535 to 0.9867 for the Matthews Correlation Coefficient, although having only very few packets per host (2-6).
+
+A full description of the tools, its capabilities, the testing approach and evaluation results can be found in Alexander's [Bachelor's Thesis](https://www.net.in.tum.de/fileadmin/bibtex/publications/theses/2017-BSc-Schulz.pdf)
 
 ## Files
 - candidate\_identification.cpp		--> creates possible sibling candidates from connections within the last 30 seconds
@@ -12,9 +15,11 @@ In our evaluation, we achieved results ranging from 0.9535 to 0.9867 for the Mat
 					   
 ## Usage
 
-make<br>
-./sibling\_tool -i eth0<br>
-./sibling\_tool -f file.pcap
+```
+make  
+./sibling_tool -i eth0
+./sibling_tool -f file.pcap
+```
 
-*Output:*<br>
+*Output:*  
 stdout, or option "-n" to print negative results to file, "-r" to print positive results to file.
